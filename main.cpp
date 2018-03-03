@@ -10,8 +10,8 @@ int main(int argc, char** argv) {
     TGAImage image(100, 100, TGAImage::RGB);
     TGAColor color = TGAColor(0, 255, 255, 255);
 
-    DWGTool::line(0, 0, 110, 100, image, color);
-    DWGTool::line(-10, 0, 30, 100, image, color);
+    DWGTool::line(-15, 0, 110, 100, image, color);
+    DWGTool::line(-15, 0, 30, 100, image, color);
 
     // save our image
     image.write_tga_file("output.tga");

@@ -5,7 +5,7 @@
 #include "DWGTool.h"
 
 // algorithm for drawing a line to a screen
-void DWGTool::line(int x0, int y0, int x1, int y1, TGAImage &image, TGAColor color) {
+void DWGTool::line(int x0, int y0, int x1, int y1, TGAImage &image, TGAColor &color) {
 
     // steep just means that dy > dx.
     // if the line is steep, we transpose the line during rendering

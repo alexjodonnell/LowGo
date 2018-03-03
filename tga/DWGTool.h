@@ -13,7 +13,7 @@ class DWGTool {
 public:
 
     // algorithm for drawing a line to a screen
-    static void line(int x0, int y0, int x1, int y1, TGAImage &image, TGAColor color);
+    static void line(int x0, int y0, int x1, int y1, TGAImage &image, TGAColor &color);
 
 };
 
