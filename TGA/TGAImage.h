@@ -2,12 +2,16 @@
 // Created by Alex O'Donnell on 2018-03-03.
 //
 
+//
+
 #ifndef __IMAGE_H__
 #define __IMAGE_H__
 
 #include <fstream>
 
 #pragma pack(push,1)
+
+
 struct TGA_Header {
     char idlength;
     char colormaptype;
@@ -65,6 +69,7 @@ struct TGAColor {
 
 
 class TGAImage {
+
 protected:
     unsigned char* data;
     int width;
@@ -73,6 +78,7 @@ protected:
 
     bool   load_rle_data(std::ifstream &in);
     bool unload_rle_data(std::ofstream &out);
+
 public:
     enum Format {
         GRAYSCALE=1, RGB=3, RGBA=4
