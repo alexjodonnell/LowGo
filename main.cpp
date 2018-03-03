@@ -8,11 +8,10 @@ const TGAColor red   = TGAColor(255, 0,   0,   255);
 int main(int argc, char** argv) {
 
     TGAImage image(100, 100, TGAImage::RGB);
-    TGAColor color = TGAColor(0, 255, 255, 128);
+    TGAColor color = TGAColor(0, 255, 255, 255);
 
-    DWGTool::line(0, 0, 50, 50, image, color);
-
-    DWGTool::line(90, 0, 100, 100, image, color);
+    DWGTool::line(0, 0, 110, 100, image, color);
+    DWGTool::line(-10, 0, 30, 100, image, color);
 
     // save our image
     image.write_tga_file("output.tga");
