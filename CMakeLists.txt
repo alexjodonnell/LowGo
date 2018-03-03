@@ -3,4 +3,4 @@ project(LowGo)
 
 set(CMAKE_CXX_STANDARD 11)
 
-add_executable(LowGo main.cpp tgaimage.cpp tgaimage.h)
+add_executable(LowGo main.cpp tga/TGAImage.cpp tga/TGAImage.h tga/DWGTool.cpp tga/DWGTool.h)

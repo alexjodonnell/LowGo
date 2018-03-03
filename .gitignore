@@ -1,7 +1,5 @@
-
-# jetbrains
+ gi# jetbrains
 .idea/
-
 
 # CMake
 cmake-build-debug/

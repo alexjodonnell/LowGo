@@ -2,20 +2,21 @@
 // Created by Alex O'Donnell on 2018-03-03.
 //
 
-#include "tgaimage.h"
+// I did not make all of this myself. creds to ssloy on github -Alex
+
+#include "TGAImage.h"
 
 #include <iostream>
 #include <fstream>
 #include <string.h>
 #include <time.h>
 #include <math.h>
-#include "tgaimage.h"
+#include "TGAImage.h"
 
 // default constructor
 TGAImage::TGAImage() : data(NULL), width(0), height(0), bytespp(0) {
 }
 
-//
 TGAImage::TGAImage(int w, int h, int bpp) : data(NULL), width(w), height(h), bytespp(bpp) {
     unsigned long nbytes = width*height*bytespp;
     data = new unsigned char[nbytes];
@@ -31,6 +32,7 @@ TGAImage::TGAImage(const TGAImage &img) {
     data = new unsigned char[nbytes];
     memcpy(data, img.data, nbytes);
 }
+
 
 TGAImage::~TGAImage() {
     if (data) delete [] data;
