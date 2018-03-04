@@ -11,6 +11,7 @@ const TGAColor white = TGAColor(255, 255, 255, 255);
 const TGAColor red   = TGAColor(255,   0,   0, 255);
 const TGAColor cyan  = TGAColor(  0, 255, 255, 255);
 const TGAColor green = TGAColor(  0, 128,   0, 255);
+const TGAColor black = TGAColor(  0, 0,   0, 255);
 
 Model *model = NULL;
 
@@ -32,7 +33,19 @@ int main(int argc, char** argv) {
 
     triangle1.draw(image, green);
 
-    // this block draws the mesh of an obj file
+
+    // this block
+    for (int i=0; i<model->nfaces(); i++) {
+        std::vector<int> face = model->face(i);
+        Vec2i screen_coords[3];
+        for (int j=0; j<3; j++) {
+            Vec3f world_coords = model->vert(face[j]);
+            screen_coords[j] = Vec2i((world_coords.x+1.)*width/2., (world_coords.y+1.)*height/2.);
+        }
+        DWGTool::triangle(screen_coords[0], screen_coords[1], screen_coords[2], image, TGAColor(rand()%255, rand()%255, rand()%255, 255));
+    }
+
+    // this block draws the mesh of a model object
     for (int i=0; i < model->nfaces(); i++) {
         std::vector<int> face = model->face(i);
         for (int j = 0; j < 3; j++) {
@@ -42,7 +55,7 @@ int main(int argc, char** argv) {
             int y0 = (v0.y + 1.) * height/2.;
             int x1 = (v1.x + 1.) * width/2.;
             int y1 = (v1.y + 1.) * height/2.;
-            DWGTool::line(x0, y0, x1, y1, image, cyan);
+            DWGTool::line(x0, y0, x1, y1, image, black);
         }
     }
 
