@@ -56,10 +56,48 @@ void DWGTool::line(Vec2i p1, Vec2i p2, TGAImage &image, const TGAColor &color){
    line(p1.x, p1.y, p2.x, p2.y, image, color);
 }
 
-
 // algorithm for drawing a triangle to a screen
 void DWGTool::triangle(Vec2i p0, Vec2i p1, Vec2i p2, TGAImage &image, const TGAColor &color){
-    line(p0, p1, image, color);
-    line(p1, p2, image, color);
-    line(p2, p0, image, color);
+
+    // really hacky bubble sort to sort the vertices in the y direction
+    // (this is so that vertices can be passed in any order)
+    if (p0.y>p1.y) std::swap(p0, p1);
+    if (p0.y>p2.y) std::swap(p0, p2);
+    if (p1.y>p2.y) std::swap(p1, p2);
+
+    // at this point, p2 will have the largest y component and p0 will have the smallest
+    // this means that the line travelling from p0 to p2 can be used as a boundary in order to horizontally
+    // sweep the triangle and fill it in.
+
+    // total height of the triangle (y span)
+    int h_total = p2.y - p0.y;
+
+    // draw the bottom half of the triangle
+    for (int y = p0.y; y <= p1.y; y++) {
+        
+        int s_height = p1.y - p0.y + 1; // height of the segment
+        float alpha = (float)(y - p0.y) / h_total;
+        float beta  = (float)(y - p0.y) / s_height; // be careful with divisions by zero
+        Vec2i A = p0 + (p2 - p0) * alpha;
+        Vec2i B = p0 + (p1 - p0) * beta;
+        if (A.x>B.x) std::swap(A, B);
+
+        // follow the path from
+        for (int j=A.x; j<=B.x; j++) {
+            image.set(j, y, color); // attention, due to int casts p0.y+i != A.y 
+        }
+    }
+
+    // draw the top half of the triangle
+    for (int y = p1.y; y <= p2.y; y++) {
+        int s_height =  p2.y - p1.y+1;
+        float alpha = (float)(y - p0.y) / h_total;
+        float beta  = (float)(y - p1.y) / s_height; // be careful with divisions by zero
+        Vec2i A = p0 + (p2 - p0) * alpha;
+        Vec2i B = p1 + (p2 - p1) * beta;
+        if (A.x > B.x) std::swap(A, B);
+        for (int j = A.x; j <= B.x; j++) {
+            image.set(j, y, color); // attention, due to int casts p0.y+i != A.y 
+        }
+    }
 }

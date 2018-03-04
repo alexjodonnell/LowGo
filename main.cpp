@@ -37,7 +37,7 @@ int main(int argc, char** argv) {
 //        }
 //    }
 
-    Vec2i triangle[] = {Vec2i(330,200), Vec2i(660,200), Vec2i(500,530)};
+    Vec2i triangle[] = {Vec2i(330,200), Vec2i(660,200), Vec2i(500,500)};
 
     DWGTool::triangle(triangle[0], triangle[1], triangle[2], image, cyan);
 

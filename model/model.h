@@ -8,10 +8,12 @@
 #include <vector>
 #include "../geometry/geometry.h"
 
+// This model represents a .obj. It gets parsed and loaded during the constructor
+
 class Model {
 private:
-    std::vector<Vec3f> verts_;
-    std::vector<std::vector<int>> faces_;
+    std::vector<Vec3f> verts_;            // list of vertices
+    std::vector<std::vector<int>> faces_; // list of faces
 
 public:
     Model(const char *filename);
