@@ -17,10 +17,10 @@ public:
     static void line(int x0, int y0, int x1, int y1, TGAImage &image, const TGAColor &color);
 
     // algorithm for drawing a line to a screen
-    static void line(Vec2 p1, Vec2 p2, TGAImage &image, const TGAColor &color);
+    static void line(Vec2i p1, Vec2i p2, TGAImage &image, const TGAColor &color);
 
     // algorithm for drawing a line to a screen
-    static void triangle(int x0, int y0, int x1, int y1, TGAImage &image, const TGAColor &color);
+    static void triangle(Vec2i p1, Vec2i p2, Vec2i p3, TGAImage &image, const TGAColor &color);
 
 };
 

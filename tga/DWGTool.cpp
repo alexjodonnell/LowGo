@@ -52,6 +52,14 @@ void DWGTool::line(int x0, int y0, int x1, int y1, TGAImage &image, const TGACol
 }
 
 // algorithm for drawing a line to a screen
-void DWGTool::line(Vec2 p1, Vec2 p2, TGAImage &image, const TGAColor &color) {
+void DWGTool::line(Vec2i p1, Vec2i p2, TGAImage &image, const TGAColor &color){
    line(p1.x, p1.y, p2.x, p2.y, image, color);
+}
+
+
+// algorithm for drawing a triangle to a screen
+void DWGTool::triangle(Vec2i p0, Vec2i p1, Vec2i p2, TGAImage &image, const TGAColor &color){
+    line(p0, p1, image, color);
+    line(p1, p2, image, color);
+    line(p2, p0, image, color);
 }

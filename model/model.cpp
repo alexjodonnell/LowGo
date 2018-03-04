@@ -76,4 +76,3 @@ std::vector<int> Model::face(int idx) {
 Vec3f Model::vert(int i) {
     return verts_[i];
 }
-
