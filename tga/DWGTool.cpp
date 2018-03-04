@@ -5,7 +5,7 @@
 #include "DWGTool.h"
 
 // algorithm for drawing a line to a screen
-void DWGTool::line(int x0, int y0, int x1, int y1, TGAImage &image, TGAColor &color) {
+void DWGTool::line(int x0, int y0, int x1, int y1, TGAImage &image, const TGAColor &color) {
 
     // steep just means that dy > dx.
     // if the line is steep, we transpose the line during rendering
@@ -26,7 +26,8 @@ void DWGTool::line(int x0, int y0, int x1, int y1, TGAImage &image, TGAColor &co
     int dx = x1 - x0;
     int dy = y1 - y0;
 
-    // rate of change of the error
+    // rate of change of the error in the y direction.
+    // this value is estimated as the rate of change in the y direction times 2
     int derror = std::abs(dy) * 2;
 
     // prime the loop
@@ -48,4 +49,9 @@ void DWGTool::line(int x0, int y0, int x1, int y1, TGAImage &image, TGAColor &co
             error -= dx * 2;
         }
     }
+}
+
+// algorithm for drawing a line to a screen
+void DWGTool::line(Vec2 p1, Vec2 p2, TGAImage &image, const TGAColor &color) {
+   line(p1.x, p1.y, p2.x, p2.y, image, color);
 }
