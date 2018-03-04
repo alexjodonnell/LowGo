@@ -17,3 +17,4 @@ Vec3f barycentric(Vec2i *pts, Vec2i P) {
 
     return Vec3f(1.f - (u.x + u.y) / u.z, u.y / u.z, u.x / u.z);
 }
+
