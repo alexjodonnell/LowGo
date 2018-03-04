@@ -12,6 +12,9 @@
 // constructor that takes in a filename
 Model::Model(const char *filename) : verts_(), faces_() {
 
+    // todo: this code assumes that there are texture coordinates. You should fix this so that when a face is parsed that doesn't have it, it won't break the code
+    // todo: (cont) the best workaround to open a model without texture coordinates is to replace all "//" with "/1/"
+
     std::ifstream in;
     in.open (filename, std::ifstream::in);
 
