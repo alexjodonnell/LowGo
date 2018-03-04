@@ -51,9 +51,32 @@ void DWGTool::line(int x0, int y0, int x1, int y1, TGAImage &image, const TGACol
     }
 }
 
+
+
+
 // algorithm for drawing a line to a screen
 void DWGTool::line(Vec2i p1, Vec2i p2, TGAImage &image, const TGAColor &color){
    line(p1.x, p1.y, p2.x, p2.y, image, color);
+}
+
+void triangle(Vec2i *pts, TGAImage &image, TGAColor color) {
+    Vec2i bboxmin(image.get_width()-1,  image.get_height()-1);
+    Vec2i bboxmax(0, 0);
+    Vec2i clamp(image.get_width()-1, image.get_height()-1);
+    for (int i=0; i<3; i++) {
+        for (int j=0; j<2; j++) {
+            bboxmin[j] = std::max(0,        std::min(bboxmin[j], pts[i][j]));
+            bboxmax[j] = std::min(clamp[j], std::max(bboxmax[j], pts[i][j]));
+        }
+    }
+    Vec2i P;
+    for (P.x=bboxmin.x; P.x<=bboxmax.x; P.x++) {
+        for (P.y=bboxmin.y; P.y<=bboxmax.y; P.y++) {
+            Vec3f bc_screen  = barycentric(pts, P);
+            if (bc_screen.x<0 || bc_screen.y<0 || bc_screen.z<0) continue;
+            image.set(P.x, P.y, color);
+        }
+    }
 }
 
 // algorithm for drawing a triangle to a screen
@@ -72,32 +95,29 @@ void DWGTool::triangle(Vec2i p0, Vec2i p1, Vec2i p2, TGAImage &image, const TGAC
     // total height of the triangle (y span)
     int h_total = p2.y - p0.y;
 
-    // draw the bottom half of the triangle
-    for (int y = p0.y; y <= p1.y; y++) {
-        
-        int s_height = p1.y - p0.y + 1; // height of the segment
-        float alpha = (float)(y - p0.y) / h_total;
-        float beta  = (float)(y - p0.y) / s_height; // be careful with divisions by zero
-        Vec2i A = p0 + (p2 - p0) * alpha;
-        Vec2i B = p0 + (p1 - p0) * beta;
-        if (A.x>B.x) std::swap(A, B);
+    // bit messy lol. For the entire span of the triangle
+    for (int i = 0; i < h_total; i++) {
 
-        // follow the path from
-        for (int j=A.x; j<=B.x; j++) {
-            image.set(j, y, color); // attention, due to int casts p0.y+i != A.y 
-        }
-    }
+        // are we in the top or bottom half of the triangle?
+        bool second_half = i > p1.y - p0.y || p1.y == p0.y;
 
-    // draw the top half of the triangle
-    for (int y = p1.y; y <= p2.y; y++) {
-        int s_height =  p2.y - p1.y+1;
-        float alpha = (float)(y - p0.y) / h_total;
-        float beta  = (float)(y - p1.y) / s_height; // be careful with divisions by zero
+        // based on which half we are in, calculate segment height as the difference in the y direction from p1 to our half
+        int segment_height = second_half ? p2.y - p1.y : p1.y - p0.y;
+
+        // alpha = ratio of completed portion to the entire triangle
+        float alpha = (float)i / h_total;
+
+        // beta = ratio of the completed portion to the current segment
+        float beta  = (float)(i - (second_half ? p1.y - p0.y : 0)) / segment_height;
+
         Vec2i A = p0 + (p2 - p0) * alpha;
-        Vec2i B = p1 + (p2 - p1) * beta;
+        Vec2i B = second_half ? p1 + (p2 - p1) * beta : p0 + (p1 - p0) * beta;
+
         if (A.x > B.x) std::swap(A, B);
         for (int j = A.x; j <= B.x; j++) {
-            image.set(j, y, color); // attention, due to int casts p0.y+i != A.y 
+            image.set(j, p0.y + i, color); // attention, due to int casts p0.y+i != A.y
         }
     }
+
+
 }

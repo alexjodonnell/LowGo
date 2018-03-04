@@ -37,9 +37,11 @@ int main(int argc, char** argv) {
 //        }
 //    }
 
-    Vec2i triangle[] = {Vec2i(330,200), Vec2i(660,200), Vec2i(500,500)};
+    Vec2i triangle0[] = {Vec2i(330,200), Vec2i(660,200), Vec2i(500,500)};
+    Vec2i triangle1[] = {Vec2i(330,800), Vec2i(660,800), Vec2i(500,500)};
 
-    DWGTool::triangle(triangle[0], triangle[1], triangle[2], image, cyan);
+    DWGTool::triangle(triangle0[0], triangle0[1], triangle0[2], image, cyan);
+    DWGTool::triangle(triangle1[0], triangle1[1], triangle1[2], image, red);
 
     image.flip_vertically(); // makes the origin at the left bottom corner of the image as opposed to the top
     image.write_tga_file("output.tga");
