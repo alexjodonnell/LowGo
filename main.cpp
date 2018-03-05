@@ -33,6 +33,8 @@ int main(int argc, char** argv) {
 //
 //    triangle1.draw(image, green);
 
+    // todo move these methods to the model class
+
 //    // this block makes a flat shading render of the model
 //    // for each face
 //    for (int i=0; i<model->nfaces(); i++) {
