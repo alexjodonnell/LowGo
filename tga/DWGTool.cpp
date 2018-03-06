@@ -5,7 +5,7 @@
 #include "DWGTool.h"
 
 // algorithm for drawing a line to a screen
-void DWGTool::line(int x0, int y0, int x1, int y1, TGAImage &image, const TGAColor &color) {
+void line(int x0, int y0, int x1, int y1, TGAImage &image, const TGAColor &color) {
 
     // steep just means that dy > dx.
     // if the line is steep, we transpose the line during rendering
@@ -52,12 +52,12 @@ void DWGTool::line(int x0, int y0, int x1, int y1, TGAImage &image, const TGACol
 }
 
 // algorithm for drawing a line to a screen using vectors as inputs
-void DWGTool::line(Vec2i p1, Vec2i p2, TGAImage &image, const TGAColor &color){
+void line(Vec2i p1, Vec2i p2, TGAImage &image, const TGAColor &color){
     line(p1.x, p1.y, p2.x, p2.y, image, color);
 }
 
-// algorithm for drawing a triangle to a screen
-void DWGTool::triangle(Vec2i p0, Vec2i p1, Vec2i p2, TGAImage &image, const TGAColor &color){
+// algorithm for drawing a triangle shaded to a screen (no z buffer implemented so pretty rough)
+void triangle(Vec2i p0, Vec2i p1, Vec2i p2, TGAImage &image, const TGAColor &color){
 
     // really hacky bubble sort to sort the vertices in the y direction
     // (this is so that vertices can be passed in any order)
@@ -93,6 +93,44 @@ void DWGTool::triangle(Vec2i p0, Vec2i p1, Vec2i p2, TGAImage &image, const TGAC
         if (A.x > B.x) std::swap(A, B);
         for (int j = A.x; j <= B.x; j++) {
             image.set(j, p0.y + i, color); // attention, due to int casts p0.y+i != A.y
+        }
+    }
+}
+
+// triangle that implements z buffer so that shapes that are blocked by other objects aren't drawn
+void triangle(Vec3f *pts, float *zbuffer, TGAImage &image, TGAColor color, int width) {
+
+    // initialize the bounding box (eventually will be the bottom left and top right of our triangle)
+    Vec2f bboxmin( std::numeric_limits<float>::max(),  std::numeric_limits<float>::max());
+    Vec2f bboxmax(-std::numeric_limits<float>::max(), -std::numeric_limits<float>::max());
+
+    // limit the rendering of the screen to the screen itself
+    Vec2f clamp(image.get_width()-1, image.get_height()-1);
+
+    // iterate through the vertices of the triangle and choose min/max coordinates for the bounding box.
+    for (int i=0; i<3; i++) {
+        for (int j=0; j<2; j++) {
+            bboxmin[j] = std::max(0.f,      std::min(bboxmin[j], pts[i][j]));
+            bboxmax[j] = std::min(clamp[j], std::max(bboxmax[j], pts[i][j]));
+        }
+    }
+
+    // initialize barycenter
+    Vec3f P;
+
+    // for the span of the barycentric coordinates (the entire triangle)
+    for (P.x=bboxmin.x; P.x<=bboxmax.x; P.x++) {
+        for (P.y=bboxmin.y; P.y<=bboxmax.y; P.y++) {
+
+            // compute the barycenter of the screen
+            Vec3f bc_screen  = barycentric(pts[0], pts[1], pts[2], P);
+            if (bc_screen.x<0 || bc_screen.y<0 || bc_screen.z<0) continue;
+            P.z = 0;
+            for (int i=0; i<3; i++) P.z += pts[i][2]*bc_screen[i];
+            if (zbuffer[int(P.x+P.y * width)]<P.z) {
+                zbuffer[int(P.x+P.y * width)] = P.z;
+                image.set(P.x, P.y, color);
+            }
         }
     }
 }

@@ -84,5 +84,8 @@ template <class t> static void cross(Vec3<t> &u, Vec3<t> &v, Vec3<t> &r){
 // transforms a set of points from cartesian to barycentric given some point P which is the barycenter (see wikipedia or something)
 Vec3f barycentric(Vec2i *pts, Vec2i P);
 
+// transforms a set of 3 points from cartesian to barycentric given some point P which is the barycenter
+Vec3f barycentric(Vec3f A, Vec3f B, Vec3f C, Vec3f P);
 
+Vec3f world2screen(Vec3f v, int width, int height);
 #endif //LOWGO_GEOMETRY_H

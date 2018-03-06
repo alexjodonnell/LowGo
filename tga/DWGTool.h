@@ -12,19 +12,18 @@
 #include "TGAImage.h"
 #include "../geometry/geometry.h"
 
-class DWGTool {
-public:
 
     // algorithm for drawing a line to a screen
-    static void line(int x0, int y0, int x1, int y1, TGAImage &image, const TGAColor &color);
+    void line(int x0, int y0, int x1, int y1, TGAImage &image, const TGAColor &color);
 
     // algorithm for drawing a line to a screen
-    static void line(Vec2i p1, Vec2i p2, TGAImage &image, const TGAColor &color);
+    void line(Vec2i p1, Vec2i p2, TGAImage &image, const TGAColor &color);
 
-    // algorithm for drawing a triangle to a screen
-    static void triangle(Vec2i p1, Vec2i p2, Vec2i p3, TGAImage &image, const TGAColor &color);
+    // algorithm for drawing a uniform triangle to a screen
+    void triangle(Vec2i p1, Vec2i p2, Vec2i p3, TGAImage &image, const TGAColor &color);
 
-};
+    // shaded triangle
+    void triangle(Vec3f *pts, float *zbuffer, TGAImage &image, TGAColor color, int width);
 
 
 #endif //LOWGO_DWGTOOLS_H
