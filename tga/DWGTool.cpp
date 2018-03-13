@@ -87,7 +87,7 @@ void triangle(Vec2i p0, Vec2i p1, Vec2i p2, TGAImage &image, const TGAColor &col
         // beta = ratio of the completed portion to the current segment
         float beta  = (float)(i - (second_half ? p1.y - p0.y : 0)) / segment_height;
 
-        Vec2i A = p0 + (p2 - p0) * alpha; // this isn't really an error, the operation is overridden
+        Vec2i A = p0 + (p2 - p0) * alpha; // this isn't really an error, the operation is overridden in the vector class
         Vec2i B = second_half ? p1 + (p2 - p1) * beta : p0 + (p1 - p0) * beta;
 
         if (A.x > B.x) std::swap(A, B);
@@ -124,7 +124,11 @@ void triangle(Vec3f *pts, float *zbuffer, TGAImage &image, TGAColor color, int w
 
             // compute the barycenter of the screen
             Vec3f bc_screen  = barycentric(pts[0], pts[1], pts[2], P);
+
+            // if we're still in bounds, keep going
             if (bc_screen.x<0 || bc_screen.y<0 || bc_screen.z<0) continue;
+
+
             P.z = 0;
             for (int i=0; i<3; i++) P.z += pts[i][2]*bc_screen[i];
             if (zbuffer[int(P.x+P.y * width)]<P.z) {

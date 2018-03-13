@@ -108,19 +108,20 @@ void Model::dwg0(TGAImage &image, const TGAColor &color, int width, int height){
 // flat shape rendering with random colors
 void Model::dwg1(TGAImage &image, int width, int height){
     float *zbuffer = new float[width*height];
-    for (int i=width*height; i--; zbuffer[i] = -std::numeric_limits<float>::max());
-    Vec3f world_coords[3];
+    for (int i = width * height; i--; zbuffer[i] = -std::numeric_limits<float>::max());
 
-    for (int i=0; i<this->nfaces(); i++) {
+    for (int i=0; i < this->nfaces(); i++) {
         std::vector<int> face = this->face(i);
         Vec3f pts[3];
-        for (int i=0; i<3; i++) pts[i] = world2screen(this->vert(face[i]), width, height);
+        for (int i = 0; i < 3; i++) pts[i] = world2screen(this->vert(face[i]), width, height);
         triangle(pts, zbuffer, image, TGAColor(rand()%255, rand()%255, rand()%255, 255), width);
     }
 }
 
-// shaded mesh given a light vector (still no z buffer)
+// shaded mesh given a light vector ( still no z buffer so depricated )
 void Model::dwg2(TGAImage &image, Vec3f light, int width, int height){
+
+    std::cerr << "dwg2 has no x buffer therfore it's not the best. Use dwg 3 instead" << std::endl;
 
     for (int i = 0; i < this->nfaces(); i++) {
         std::vector<int> face = this->face(i);
@@ -129,11 +130,11 @@ void Model::dwg2(TGAImage &image, Vec3f light, int width, int height){
 
         for (int j=0; j<3; j++) {
             Vec3f v = this->vert(face[j]);
-            screen_coords[j] = Vec2i((v.x+1.)*width/2., (v.y+1.)*height/2.);
-            world_coords[j]  = v;
+            screen_coords[j] = Vec2i((v.x + 1.) * width / 2., (v.y + 1.) * height / 2.);
+            world_coords[j] = v;
         }
 
-        Vec3f n = (world_coords[2]-world_coords[0])^(world_coords[1]-world_coords[0]);
+        Vec3f n = (world_coords[2] - world_coords[0]) ^ (world_coords[1] - world_coords[0]);
         n.normalize();
         float intensity = n * light;
 
@@ -142,5 +143,69 @@ void Model::dwg2(TGAImage &image, Vec3f light, int width, int height){
         if (intensity > 0) {
              triangle(screen_coords[0], screen_coords[1], screen_coords[2], image, TGAColor(intensity*255, intensity*255, intensity*255, 255));
         }
+    }
+}
+
+// shaded mesh given a light vector. z buffer is implemented
+void Model::dwg3(TGAImage &image, Vec3f light, int width, int height){
+
+    // Initialize the z buffer
+    float *zbuffer = new float[width * height];
+    for (int i=width*height; i--; zbuffer[i] = -std::numeric_limits<float>::max());
+
+    // used to calculate the normal
+    Vec3f world_coords[3];
+
+    for (int i = 0; i < this->nfaces(); i++) {
+
+        std::vector<int> face = this->face(i);
+
+        Vec3f world_coords[3];
+        Vec3f pts[3];
+        for (int i = 0; i < 3; i++) pts[i] = world2screen(this->vert(face[i]), width, height);
+
+
+        for (int j = 0; j < 3; j++) {
+            Vec3f v = this->vert(face[j]);
+            world_coords[j]  = v;
+        }
+
+        Vec3f n = (world_coords[2] - world_coords[0]) ^ (world_coords[1] - world_coords[0]);
+        n.normalize();
+        float intensity = n * light;
+
+        if(intensity > 0) triangle(pts, zbuffer, image, TGAColor(intensity * 255, intensity * 255, intensity * 255, 255), width);
+    }
+}
+
+// coloured and shaded mesh given a light vector. z buffer is implemented
+void Model::dwg3(TGAImage &image, Vec3f light, int width, int height){
+
+    // Initialize the z buffer
+    float *zbuffer = new float[width * height];
+    for (int i=width*height; i--; zbuffer[i] = -std::numeric_limits<float>::max());
+
+    // used to calculate the normal
+    Vec3f world_coords[3];
+
+    for (int i = 0; i < this->nfaces(); i++) {
+
+        std::vector<int> face = this->face(i);
+
+        Vec3f world_coords[3];
+        Vec3f pts[3];
+        for (int i = 0; i < 3; i++) pts[i] = world2screen(this->vert(face[i]), width, height);
+
+
+        for (int j = 0; j < 3; j++) {
+            Vec3f v = this->vert(face[j]);
+            world_coords[j]  = v;
+        }
+
+        Vec3f n = (world_coords[2] - world_coords[0]) ^ (world_coords[1] - world_coords[0]);
+        n.normalize();
+        float intensity = n * light;
+
+        if(intensity > 0) triangle(pts, zbuffer, image, TGAColor(intensity * 255, intensity * 255, intensity * 255, 255), width);
     }
 }

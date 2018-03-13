@@ -33,6 +33,9 @@ public:
 
     // shaded mesh given a light vector
     void dwg2(TGAImage &image, Vec3f light, int width, int height);
+
+    // shaded mesh given a light vector
+    void dwg3(TGAImage &image, Vec3f light, int width, int height);
 };
 
 #endif //LOWGO_MODEL_H

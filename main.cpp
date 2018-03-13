@@ -21,17 +21,21 @@ const int height = 800;
 
 int main(int argc, char** argv) {
 
+    // create the z buffer and encode it within one dimension
+    float *zbuffer = new float[width*height];
+    for (int i = width * height; i--; zbuffer[i] = -std::numeric_limits<float>::max());
+
     if (2 == argc) {
         model = new Model(argv[1]);
     } else {
-        model = new Model("../resources/Totodile2.obj");
+        model = new Model("../resources/models/Totodile2.obj");
     }
 
-    Vec3f light(-1,1,-20);
+    Vec3f light(0,0,-1);
 
     TGAImage image(width, height, TGAImage::RGB);
 
-    model->dwg2(image, light, width, height);
+    model->dwg3(image, light, width, height);
 
     puts("Done");
     image.flip_vertically(); // makes the origin at the left bottom corner of the image as opposed to the top left
