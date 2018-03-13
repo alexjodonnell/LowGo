@@ -7,12 +7,13 @@
 #include "tga/DWGTool.h"
 #include "render/RenderUtils.h"
 
-const TGAColor white = TGAColor(255, 255, 255, 255);
-const TGAColor red   = TGAColor(255,   0,   0, 255);
-const TGAColor green = TGAColor(  0, 255,   0, 255);
-const TGAColor blue  = TGAColor(  0,   0, 255, 255);
-const TGAColor cyan  = TGAColor(  0, 255, 255, 255);
-const TGAColor black = TGAColor(  0,   0,   0, 255);
+const TGAColor white  = TGAColor(255, 255, 255, 255);
+const TGAColor black  = TGAColor(  0,   0,   0, 255);
+const TGAColor red    = TGAColor(255,   0,   0, 255);
+const TGAColor green  = TGAColor(  0, 255,   0, 255);
+const TGAColor blue   = TGAColor(  0,   0, 255, 255);
+const TGAColor cyan   = TGAColor(  0, 255, 255, 255);
+const TGAColor forest = TGAColor( 34, 139,  34, 255);
 
 Model *model = NULL;
 
@@ -28,14 +29,14 @@ int main(int argc, char** argv) {
     if (2 == argc) {
         model = new Model(argv[1]);
     } else {
-        model = new Model("../resources/models/Face.obj");
+        model = new Model("../resources/models/Lambo.obj");
     }
 
     Vec3f light(0,0,-1);
 
     TGAImage image(width, height, TGAImage::RGB);
 
-    model->dwg3(image, light, width, height);
+    model->dwg4(image, red, light, width, height);
 
     puts("Done");
     image.flip_vertically(); // makes the origin at the left bottom corner of the image as opposed to the top left

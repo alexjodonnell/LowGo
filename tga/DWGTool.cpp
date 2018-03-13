@@ -2,11 +2,13 @@
 // Created by Alex O'Donnell on 2018-03-03.
 //
 
+#include <iostream>
 #include "DWGTool.h"
 
 // algorithm for drawing a line to a screen
 void line(int x0, int y0, int x1, int y1, TGAImage &image, const TGAColor &color) {
 
+    puts("here");
     // steep just means that dy > dx.
     // if the line is steep, we transpose the line during rendering
     bool steep = false;
@@ -58,6 +60,9 @@ void line(Vec2i p1, Vec2i p2, TGAImage &image, const TGAColor &color){
 
 // algorithm for drawing a triangle shaded to a screen (no z buffer implemented so pretty rough)
 void triangle(Vec2i p0, Vec2i p1, Vec2i p2, TGAImage &image, const TGAColor &color){
+
+    std::cerr << "There's a better triangle method out now with a z buffer implemented. "
+            "Keeping this here for educational purposes. Use the triangle function that takes a pointer instead" << std::endl;
 
     // really hacky bubble sort to sort the vertices in the y direction
     // (this is so that vertices can be passed in any order)
@@ -119,14 +124,14 @@ void triangle(Vec3f *pts, float *zbuffer, TGAImage &image, TGAColor color, int w
     Vec3f P;
 
     // for the span of the barycentric coordinates (the entire triangle)
-    for (P.x=bboxmin.x; P.x<=bboxmax.x; P.x++) {
-        for (P.y=bboxmin.y; P.y<=bboxmax.y; P.y++) {
+    for (P.x = bboxmin.x; P.x <= bboxmax.x; P.x++) {
+        for (P.y = bboxmin.y; P.y <= bboxmax.y; P.y++) {
 
             // compute the barycenter of the screen
             Vec3f bc_screen  = barycentric(pts[0], pts[1], pts[2], P);
 
             // if we're still in bounds, keep going
-            if (bc_screen.x<0 || bc_screen.y<0 || bc_screen.z<0) continue;
+            if (bc_screen.x < 0 || bc_screen.y < 0 || bc_screen.z < 0) continue;
 
 
             P.z = 0;

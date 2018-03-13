@@ -28,14 +28,17 @@ public:
     // mesh rendering of a given color
     void dwg0(TGAImage &image, const TGAColor &color, int width, int height);
 
-    // flat shape rendering with random colors
+    // flat shape rendering with random colors with z buffer
     void dwg1(TGAImage &image, int width, int height);
 
     // shaded mesh given a light vector
     void dwg2(TGAImage &image, Vec3f light, int width, int height);
 
-    // shaded mesh given a light vector
+    // shaded mesh given a light vector with z buffer
     void dwg3(TGAImage &image, Vec3f light, int width, int height);
+
+    // coloured, shaded mesh given a light vector with z buffer
+    void dwg4(TGAImage &image, const TGAColor &color, Vec3f light, int width, int height);
 };
 
 #endif //LOWGO_MODEL_H
