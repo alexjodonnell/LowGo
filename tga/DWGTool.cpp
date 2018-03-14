@@ -104,51 +104,47 @@ void triangle(Vec2i p0, Vec2i p1, Vec2i p2, TGAImage &image, const TGAColor &col
 }
 
 // triangle that implements z buffer so that shapes that are blocked by other objects aren't drawn
-void triangle(Vec3f *verts, float *zbuffer, TGAImage &image, TGAColor color, int width ) {
+void triangle(Vec3f *pts, float *zbuffer, TGAImage &image, TGAColor color, int width) {
 
-    // really hacky bubble sort to sort the vertices in the y direction
-    // (this is so that vertices can be passed in any order)
-    if (verts[0].y>verts[1].y) std::swap(verts[0], verts[1]);
-    if (verts[0].y>verts[2].y) std::swap(verts[0], verts[2]);
-    if (verts[1].y>verts[2].y) std::swap(verts[1], verts[2]);
+    // fixme this triangle is broken but it is way better than all the other ones
 
-    // at this point, verts[2] will have the largest y component and verts[0] will have the smallest
-    // this means that the line travelling from verts[0] to verts[2] can be used as a boundary in order to horizontally
-    // sweep the triangle and fill it in.
+    // initialize the bounding box (eventually will be the bottom left and top right of our triangle)
+    Vec2f bboxmin( std::numeric_limits<float>::max(),  std::numeric_limits<float>::max());
+    Vec2f bboxmax(-std::numeric_limits<float>::max(), -std::numeric_limits<float>::max());
 
-    // total height of the triangle (y span)
-    int h_total = verts[2].y - verts[0].y;
+    // limit the rendering of the screen to the screen itself
+    Vec2f clamp(image.get_width() - 1, image.get_height() - 1);
 
-    // bit messy lol. For the entire span of the triangle
-    for (int i = 0; i < h_total; i++) {
+    // iterate through the vertices of the triangle and choose the real min/max coordinates for the bounding box.
+    for (int i=0; i < 3; i++) {
+        for (int j=0; j < 2; j++) {
 
-        // are we in the top or bottom half of the triangle?
-        bool second_half = i > verts[1].y - verts[0].y || verts[1].y == verts[0].y;
+            bboxmin[j] = std::max(0.f, (std::min(bboxmin[j], pts[i][j])));
+            bboxmax[j] = std::min(clamp[j], (std::max(bboxmax[j], pts[i][j])));
+        }
+    }
 
-        // based on which half we are in, calculate segment height as the difference in the y direction from verts[1] to our half
-        int segment_height = second_half ? verts[2].y - verts[1].y : verts[1].y - verts[0].y;
+    // initialize barycenter
+    Vec3f P;
 
-        // alpha = ratio of completed portion to the entire triangle
-        float alpha = (float)i / h_total;
+    // debugging statement
+//    std::cout << bboxmax << bboxmin << std::endl;
 
-        // beta = ratio of the completed portion to the current segment
-        float beta  = (float)(i - (second_half ? verts[1].y - verts[0].y : 0)) / segment_height;
+    // for the span of the barycentric coordinates (the entire triangle)
+    for (P.x = bboxmin.x; P.x <= bboxmax.x; P.x++) {
+        for (P.y = bboxmin.y; P.y <= bboxmax.y; P.y++) {
+            puts("broke, my triangle is broken");
+            // compute the barycenter of the screen
+            Vec3f bc_screen  = barycentric(pts[0], pts[1], pts[2], P);
 
-        Vec3i A   = verts[0] + Vec3f(verts[2] - verts[0]) * alpha;
-        Vec3i B   = second_half ? verts[1]  + Vec3f(verts[2] - verts[1]) * beta : verts[0] + Vec3f(verts[1] - verts[0] ) * beta;
+            // if we're still in bounds, keep going
+            if (bc_screen.x < 0 || bc_screen.y < 0 || bc_screen.z < 0) continue;
 
-        if (A.x > B.x) std::swap(A, B);
-        for (int j = A.x; j <= B.x; j++) {
-
-            float phi = B.x == A.x ? 1. : (float)(j - A.x)/(float)(B.x - A.x);
-            Vec3i P = Vec3f(A) + Vec3f(B - A) * phi;
-
-            int idx = P.x+P.y*image.get_width();
-            if (zbuffer[idx]<P.z) {
-                zbuffer[idx] = P.z;
-
-                image.set(j, verts[0].y + i, color);
-                // attention, due to int casts verts[0].y+i != A.y
+            P.z = 0;
+            for (int i=0; i<3; i++) P.z += pts[i][2] * bc_screen[i];
+            if (zbuffer[int(P.x+P.y * width)]<P.z) {
+                zbuffer[int(P.x+P.y * width)] = P.z;
+                image.set(P.x, P.y, color);
             }
         }
     }
@@ -203,8 +199,8 @@ void triangle(Vec3f *verts, Vec2i *texts, float *zbuffer, float intensity, TGAIm
 
                 TGAColor color = model.diffuse(uvP);
 
-                image.set(j, verts[0].y + i, TGAColor(intensity * color.r, intensity * color.g, intensity * color.b, 255));
-                // attention, due to int casts verts[0].y+i != A.y
+                image.set(j, verts[0].y + i, TGAColor(intensity * color.r, intensity * color.g, intensity * color.b,
+                                                      255)); // attention, due to int casts verts[0].y+i != A.y
 
             }
         }
