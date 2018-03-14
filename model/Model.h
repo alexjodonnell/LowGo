@@ -15,30 +15,40 @@
 class Model {
 private:
     std::vector<Vec3f> verts_;            // list of vertices
-    std::vector<std::vector<int>> faces_; // list of faces
+    std::vector<std::vector<Vec3i>> faces_; // list of faces
+    std::vector<Vec2f> texts_; // list of textures
+
+    TGAImage diffusemap_;
+    void load_texture(std::string filename, TGAImage &img);
 
 public:
-    Model(const char *filename);
+    Model(const char *filename, const char *texturefile);
     ~Model();
     int nverts();
     int nfaces();
+    int ntexts();
     Vec3f vert(int i);
     std::vector<int> face(int idx);
+    Vec2i text(int iface, int nvert);
+
+    TGAColor diffuse(Vec2i uv);
 
     // mesh rendering of a given color
-    void dwg0(TGAImage &image, const TGAColor &color, int width, int height);
+    void dwg0(TGAImage &image, const TGAColor &color);
 
     // flat shape rendering with random colors with z buffer
-    void dwg1(TGAImage &image, int width, int height);
+    void dwg1(TGAImage &image);
 
     // shaded mesh given a light vector
-    void dwg2(TGAImage &image, Vec3f light, int width, int height);
+    void dwg2(TGAImage &image, Vec3f light);
 
     // shaded mesh given a light vector with z buffer
-    void dwg3(TGAImage &image, Vec3f light, int width, int height);
+    void dwg3(TGAImage &image, Vec3f light);
 
     // coloured, shaded mesh given a light vector with z buffer
-    void dwg4(TGAImage &image, const TGAColor &color, Vec3f light, int width, int height);
+    void dwg4(TGAImage &image, const TGAColor &color, Vec3f light);
+
+    void dwg5(TGAImage &image, Vec3f light);
 };
 
 #endif //LOWGO_MODEL_H

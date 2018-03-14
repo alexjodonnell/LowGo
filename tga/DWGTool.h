@@ -11,9 +11,10 @@
 #include <vector>
 #include "TGAImage.h"
 #include "../geometry/geometry.h"
+#include "../model/Model.h"
 
 
-    // algorithm for drawing a line to a screen
+// algorithm for drawing a line to a screen
     void line(int x0, int y0, int x1, int y1, TGAImage &image, const TGAColor &color);
 
     // algorithm for drawing a line to a screen
@@ -22,8 +23,11 @@
     // algorithm for drawing a uniform triangle to a screen
     void triangle(Vec2i p1, Vec2i p2, Vec2i p3, TGAImage &image, const TGAColor &color);
 
-    // shaded triangle
+    // triangle that implements z buffer so that shapes that are blocked by other objects aren't drawn
     void triangle(Vec3f *pts, float *zbuffer, TGAImage &image, TGAColor color, int width);
+
+    // triangle pulling from diffuse texture
+    void triangle(Vec3f *verts, Vec2i *texts, float *zbuffer, float intensity, TGAImage &image, Model model);
 
 
 #endif //LOWGO_DWGTOOLS_H

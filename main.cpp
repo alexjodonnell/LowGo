@@ -2,6 +2,7 @@
 
 #include <vector>
 #include <cmath>
+#include <limits>
 #include "tga/TGAImage.h"
 #include "model/Model.h"
 #include "tga/DWGTool.h"
@@ -27,16 +28,16 @@ int main(int argc, char** argv) {
     for (int i = width * height; i--; zbuffer[i] = -std::numeric_limits<float>::max());
 
     if (2 == argc) {
-        model = new Model(argv[1]);
+        //model = new Model(argv[1]);
     } else {
-        model = new Model("../resources/models/Lambo.obj");
+        model = new Model("../resources/models/face.obj", "../resources/textures/face_diffuse.tga");
     }
 
     Vec3f light(0,0,-1);
 
     TGAImage image(width, height, TGAImage::RGB);
 
-    model->dwg4(image, red, light, width, height);
+    model->dwg4(image, forest, light);
 
     puts("Done");
     image.flip_vertically(); // makes the origin at the left bottom corner of the image as opposed to the top left
