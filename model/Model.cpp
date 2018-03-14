@@ -180,7 +180,7 @@ void Model::dwg2(TGAImage &image, Vec3f light){
     int width = image.get_width();
     int height = image.get_height();
 
-    std::cerr << "dwg2 has no x buffer therfore it's not the best. Use dwg 3 instead" << std::endl;
+    std::cerr << "dwg2 has no x buffer therefore it's not the best. Use dwg 3 instead" << std::endl;
 
     for (int i = 0; i < this->nfaces(); i++) {
         std::vector<int> face = this->face(i);
@@ -239,7 +239,7 @@ void Model::dwg3(TGAImage &image, Vec3f light){
 
         // if the triangle is behing the light, don't draw it
         if (intensity > 0)
-            triangle(pts, zbuffer, image, TGAColor(intensity * 255, intensity * 255, intensity * 255, 255), image.get_width());
+            triangle(pts, zbuffer, image, TGAColor(intensity * 255, intensity * 255, intensity * 255, 255), width);
     }
 }
 
@@ -274,8 +274,7 @@ void Model::dwg4(TGAImage &image, const TGAColor &color, Vec3f light){
         n.normalize();
         float intensity = n * light;
 
-        // if the triangle is behing the light, don't draw it
-        std::cout << intensity << " " << pts[0] << std::endl;
+        // if the triangle is behind the light, don't draw it
         if (intensity > 0)
 
             triangle(pts, zbuffer, image, TGAColor(intensity * color.r, intensity * color.g, intensity * color.b, 255), width);
