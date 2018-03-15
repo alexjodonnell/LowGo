@@ -7,6 +7,8 @@
 #include "DWGTool.h"
 #include "../model/Model.h"
 
+using namespace std;
+
 // helper methods
 
 
@@ -107,7 +109,7 @@ void triangle(Vec2i p0, Vec2i p1, Vec2i p2, TGAImage &image, const TGAColor &col
     }
 }
 
-// triangle that implements z buffer so that shapes that are blocked by other objects aren't drawn
+// triangle that implements z buffer so that shapes that are blocked by other objects aren't drawn (best triangle yet)
 void triangle(Vec3f *pts, float *zbuffer, TGAImage &image, TGAColor color) {
 
     int width = image.get_width();
@@ -129,9 +131,6 @@ void triangle(Vec3f *pts, float *zbuffer, TGAImage &image, TGAColor color) {
 
     // initialize barycenter
     Vec3f P;
-
-    // debugging statement
-    std::cout << bboxmax << bboxmin << std::endl;
 
     // for the span of the barycentric coordinates (the entire triangle)
     for (P.x = bboxmin.x; P.x <= bboxmax.x; P.x++) {
@@ -157,10 +156,22 @@ void triangle(Vec3f *pts, float *zbuffer, TGAImage &image, TGAColor color) {
 void triangle(Vec3f *verts, Vec2i *texts, float *zbuffer, float intensity, TGAImage &image, Model model) {
 
     // really hacky bubble sort to sort the vertices in the y direction
-    // (this is so that vertices can be passed in any order)
-    if (verts[0].y>verts[1].y) std::swap(verts[0], verts[1]);
-    if (verts[0].y>verts[2].y) std::swap(verts[0], verts[2]);
-    if (verts[1].y>verts[2].y) std::swap(verts[1], verts[2]);
+    // (this is so that vertices can be passed in any order and it won't
+    // be black because the normal was calculated as negative)
+    if (verts[0].y>verts[1].y){
+        std::swap(verts[0], verts[1]); // swap the coords
+        std::swap(texts[0], texts[1]); // take the texture coord with it
+    }
+    if (verts[0].y>verts[2].y){
+        std::swap(verts[0], verts[2]);
+        std::swap(texts[0], texts[2]);
+
+    }
+    if (verts[1].y>verts[2].y){
+        std::swap(verts[1], verts[2]);
+        std::swap(texts[1], texts[2]);
+
+    }
 
     // at this point, verts[2] will have the largest y component and verts[0] will have the smallest
     // this means that the line travelling from verts[0] to verts[2] can be used as a boundary in order to horizontally
@@ -184,27 +195,31 @@ void triangle(Vec3f *verts, Vec2i *texts, float *zbuffer, float intensity, TGAIm
         // beta = ratio of the completed portion to the current segment
         float beta  = (float)(i - (second_half ? verts[1].y - verts[0].y : 0)) / segment_height;
 
-        Vec3i A   = verts[0] + Vec3f(verts[2] - verts[0]) * alpha;
-        Vec3i B   = second_half ? verts[1]  + Vec3f(verts[2] - verts[1]) * beta : verts[0] + Vec3f(verts[1] - verts[0] ) * beta;
-        Vec2i uvA = texts[0] + (texts[2] - texts[0]) * alpha;
-        Vec2i uvB = second_half ? texts[1] + (texts[2] - texts[1]) * beta : texts[0] + (texts[1] - texts[0]) * beta;
+        Vec3i A   =               verts[0] + Vec3f(verts[2] - verts[0]) * alpha;
+        Vec3i B   = second_half ? verts[1] + Vec3f(verts[2] - verts[1]) * beta : verts[0] + Vec3f(verts[1] - verts[0]) * beta;
+        Vec2i uvA =               texts[0] +      (texts[2] - texts[0]) * alpha;
+        Vec2i uvB = second_half ? texts[1] +      (texts[2] - texts[1]) * beta : texts[0] + (texts[1] - texts[0]) * beta;
 
-        if (A.x > B.x) std::swap(A, B);
+        if (A.x > B.x) {
+            swap(A, B);
+            swap(uvA, uvB);
+        }
+
         for (int j = A.x; j <= B.x; j++) {
 
             float phi = B.x == A.x ? 1. : (float)(j - A.x)/(float)(B.x - A.x);
             Vec3i P = Vec3f(A) + Vec3f(B - A) * phi;
             Vec2i uvP = uvA + (uvB - uvA) * phi;
 
-            int idx = P.x+P.y*image.get_width();
-            if (zbuffer[idx]<P.z) {
+            int idx = P.x + P.y * image.get_width();
+
+            if (zbuffer[idx] < P.z) {
                 zbuffer[idx] = P.z;
 
                 TGAColor color = model.diffuse(uvP);
 
-                image.set(j, verts[0].y + i, TGAColor(intensity * color.r, intensity * color.g, intensity * color.b,
-                                                      255)); // attention, due to int casts verts[0].y+i != A.y
-
+                image.set(j, verts[0].y + i, TGAColor(intensity * color.r, intensity * color.g, intensity * color.b, 255));
+                // attention, due to int casts verts[0].y+i != A.y
             }
         }
     }

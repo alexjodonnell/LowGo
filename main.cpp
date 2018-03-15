@@ -8,14 +8,15 @@
 #include "tga/DWGTool.h"
 #include "render/RenderUtils.h"
 
-const TGAColor white  = TGAColor(255, 255, 255, 255);
-const TGAColor black  = TGAColor(  0,   0,   0, 255);
-const TGAColor red    = TGAColor(255,   0,   0, 255);
-const TGAColor green  = TGAColor(  0, 255,   0, 255);
-const TGAColor blue   = TGAColor(  0,   0, 255, 255);
-const TGAColor cyan   = TGAColor(  0, 255, 255, 255);
-const TGAColor yellow = TGAColor(  0, 255, 255, 255);
-const TGAColor forest = TGAColor( 34, 139,  34, 255);
+const TGAColor white   = TGAColor(255, 255, 255, 255);
+const TGAColor black   = TGAColor(  0,   0,   0, 255);
+const TGAColor red     = TGAColor(255,   0,   0, 255);
+const TGAColor green   = TGAColor(  0, 255,   0, 255);
+const TGAColor blue    = TGAColor(  0,   0, 255, 255);
+const TGAColor cyan    = TGAColor(  0, 255, 255, 255);
+const TGAColor yellow  = TGAColor(255, 255,   0, 255);
+const TGAColor magenta = TGAColor(255,   0, 255, 255);
+const TGAColor forest  = TGAColor( 34, 139,  34, 255);
 
 Model *model = NULL;
 
@@ -36,14 +37,14 @@ int main(int argc, char** argv) {
         model = new Model("../resources/models/face.obj", "../resources/textures/face_diffuse.tga");
     }
 
-    Vec3f light(1, 0, 0);
+    Vec3f light(0, 0, -1);
 
     TGAImage image(width, height, TGAImage::RGB);
 
-    Vec3f pts[] = {Vec3f(100, 200, 100), Vec3f(800, 200, 100), Vec3f(400, 700, -100)};
-    triangle(pts, zbuffer, image, forest );
+    Vec3f pts[] = {Vec3f(200, 200, -100), Vec3f(800, 200, -100), Vec3f(400, 700, -200)};
+//    triangle(pts, zbuffer, image, magenta );
+    model->dwg5(image, light);
 
-    model->dwg4(image, cyan, light);
 
 
     puts("Done");
