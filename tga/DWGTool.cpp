@@ -68,8 +68,8 @@ void line(Vec2i p1, Vec2i p2, TGAImage &image, const TGAColor &color){
 // algorithm for drawing a triangle shaded to a screen (no z buffer implemented so pretty rough)
 void triangle(Vec2i p0, Vec2i p1, Vec2i p2, TGAImage &image, const TGAColor &color){
 
-//    std::cerr << "There's a better triangle method out now with a z buffer implemented. "
-//            "Keeping this here for educational purposes. Use the triangle function that takes a pointer instead" << std::endl;
+    std::cerr << "There's a better triangle method out now with a z buffer implemented. "
+            "Keeping this here for educational purposes. Use the triangle function that takes a pointer instead" << std::endl;
 
     // really hacky bubble sort to sort the vertices in the y direction
     // (this is so that vertices can be passed in any order)
@@ -155,6 +155,7 @@ void triangle(Vec3f *pts, float *zbuffer, TGAImage &image, TGAColor color) {
 // triangle that implements z buffer so that shapes that are blocked by other objects aren't drawn
 void triangle(Vec3f *verts, Vec2i *texts, float *zbuffer, float intensity, TGAImage &image, Model model) {
 
+    // todo we have to pass in the model here in order to get access to the texture but I feel like there's a better way
     // really hacky bubble sort to sort the vertices in the y direction
     // (this is so that vertices can be passed in any order and it won't
     // be black because the normal was calculated as negative)
@@ -195,21 +196,22 @@ void triangle(Vec3f *verts, Vec2i *texts, float *zbuffer, float intensity, TGAIm
         // beta = ratio of the completed portion to the current segment
         float beta  = (float)(i - (second_half ? verts[1].y - verts[0].y : 0)) / segment_height;
 
-        Vec3i A   =               verts[0] + Vec3f(verts[2] - verts[0]) * alpha;
-        Vec3i B   = second_half ? verts[1] + Vec3f(verts[2] - verts[1]) * beta : verts[0] + Vec3f(verts[1] - verts[0]) * beta;
-        Vec2i uvA =               texts[0] +      (texts[2] - texts[0]) * alpha;
-        Vec2i uvB = second_half ? texts[1] +      (texts[2] - texts[1]) * beta : texts[0] + (texts[1] - texts[0]) * beta;
+        Vec3i A     =               verts[0] + Vec3f(verts[2] - verts[0]) * alpha;
+        Vec3i B     = second_half ? verts[1] + Vec3f(verts[2] - verts[1]) * beta : verts[0] + Vec3f(verts[1] - verts[0]) * beta;
+
+        Vec2i textA =               texts[0] + (texts[2] - texts[0])      * alpha;
+        Vec2i textB = second_half ? texts[1] + (texts[2] - texts[1])      * beta : texts[0] + (texts[1] - texts[0]) * beta;
 
         if (A.x > B.x) {
             swap(A, B);
-            swap(uvA, uvB);
+            swap(textA, textB);
         }
 
         for (int j = A.x; j <= B.x; j++) {
 
             float phi = B.x == A.x ? 1. : (float)(j - A.x)/(float)(B.x - A.x);
             Vec3i P = Vec3f(A) + Vec3f(B - A) * phi;
-            Vec2i uvP = uvA + (uvB - uvA) * phi;
+            Vec2i uvP = textA + (textB - textA) * phi;
 
             int idx = P.x + P.y * image.get_width();
 
