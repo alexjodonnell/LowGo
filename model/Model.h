@@ -15,7 +15,7 @@
 class Model {
 private:
     std::vector<Vec3f> verts_;            // list of vertices
-    std::vector<std::vector<Vec3i>> faces_; // list of faces
+    std::vector<std::vector<Vec3i>> faces_; // list of faces (vertex/texture/normal)
     std::vector<Vec2f> texts_; // list of textures
 
     TGAImage diffusemap_;

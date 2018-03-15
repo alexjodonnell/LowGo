@@ -7,6 +7,10 @@
 #include "DWGTool.h"
 #include "../model/Model.h"
 
+// helper methods
+
+
+
 // algorithm for drawing a line to a screen
 void line(int x0, int y0, int x1, int y1, TGAImage &image, const TGAColor &color) {
 
@@ -104,9 +108,9 @@ void triangle(Vec2i p0, Vec2i p1, Vec2i p2, TGAImage &image, const TGAColor &col
 }
 
 // triangle that implements z buffer so that shapes that are blocked by other objects aren't drawn
-void triangle(Vec3f *pts, float *zbuffer, TGAImage &image, TGAColor color, int width) {
+void triangle(Vec3f *pts, float *zbuffer, TGAImage &image, TGAColor color) {
 
-    // fixme this triangle is broken but it is way better than all the other ones
+    int width = image.get_width();
 
     // initialize the bounding box (eventually will be the bottom left and top right of our triangle)
     Vec2f bboxmin( std::numeric_limits<float>::max(),  std::numeric_limits<float>::max());
@@ -118,9 +122,8 @@ void triangle(Vec3f *pts, float *zbuffer, TGAImage &image, TGAColor color, int w
     // iterate through the vertices of the triangle and choose the real min/max coordinates for the bounding box.
     for (int i=0; i < 3; i++) {
         for (int j=0; j < 2; j++) {
-
-            bboxmin[j] = std::max(0.f, (std::min(bboxmin[j], pts[i][j])));
-            bboxmax[j] = std::min(clamp[j], (std::max(bboxmax[j], pts[i][j])));
+            bboxmin[j] = (std::max)(0.f, ((std::min)(bboxmin[j], pts[i][j])));
+            bboxmax[j] = (std::min)(clamp[j], ((std::max)(bboxmax[j], pts[i][j])));
         }
     }
 
@@ -128,12 +131,12 @@ void triangle(Vec3f *pts, float *zbuffer, TGAImage &image, TGAColor color, int w
     Vec3f P;
 
     // debugging statement
-//    std::cout << bboxmax << bboxmin << std::endl;
+    std::cout << bboxmax << bboxmin << std::endl;
 
     // for the span of the barycentric coordinates (the entire triangle)
     for (P.x = bboxmin.x; P.x <= bboxmax.x; P.x++) {
         for (P.y = bboxmin.y; P.y <= bboxmax.y; P.y++) {
-            puts("broke, my triangle is broken");
+
             // compute the barycenter of the screen
             Vec3f bc_screen  = barycentric(pts[0], pts[1], pts[2], P);
 
@@ -206,5 +209,7 @@ void triangle(Vec3f *verts, Vec2i *texts, float *zbuffer, float intensity, TGAIm
         }
     }
 }
+
+
 
 

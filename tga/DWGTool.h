@@ -24,7 +24,7 @@
     void triangle(Vec2i p1, Vec2i p2, Vec2i p3, TGAImage &image, const TGAColor &color);
 
     // triangle that implements z buffer so that shapes that are blocked by other objects aren't drawn
-    void triangle(Vec3f *pts, float *zbuffer, TGAImage &image, TGAColor color, int width);
+    void triangle(Vec3f *pts, float *zbuffer, TGAImage &image, TGAColor color);
 
     // triangle pulling from diffuse texture
     void triangle(Vec3f *verts, Vec2i *texts, float *zbuffer, float intensity, TGAImage &image, Model model);

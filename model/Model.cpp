@@ -170,7 +170,7 @@ void Model::dwg1(TGAImage &image){
         for (int i = 0; i < 3; i++) pts[i] = world2screen(this->vert(face[i]), width, height);
 
         std::cout << pts[0] << pts[1] << pts[2] << std::endl;
-        triangle(pts, zbuffer, image, TGAColor(rand()%255, rand()%255, rand()%255, 255), width);
+        triangle(pts, zbuffer, image, TGAColor(rand()%255, rand()%255, rand()%255, 255));
     }
 }
 
@@ -239,7 +239,7 @@ void Model::dwg3(TGAImage &image, Vec3f light){
 
         // if the triangle is behing the light, don't draw it
         if (intensity > 0)
-            triangle(pts, zbuffer, image, TGAColor(intensity * 255, intensity * 255, intensity * 255, 255), width);
+            triangle(pts, zbuffer, image, TGAColor(intensity * 255, intensity * 255, intensity * 255, 255));
     }
 }
 
@@ -277,7 +277,7 @@ void Model::dwg4(TGAImage &image, const TGAColor &color, Vec3f light){
         // if the triangle is behind the light, don't draw it
         if (intensity > 0)
 
-            triangle(pts, zbuffer, image, TGAColor(intensity * color.r, intensity * color.g, intensity * color.b, 255), width);
+            triangle(pts, zbuffer, image, TGAColor(intensity * color.r, intensity * color.g, intensity * color.b, 255));
     }
 }
 
