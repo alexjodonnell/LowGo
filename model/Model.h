@@ -12,6 +12,8 @@
 // This model represents a .obj. It gets parsed and loaded during the constructor
 // it also has a bunch of dwg* methods that render them in different ways
 
+using namespace std;
+
 class Model {
 private:
     std::vector<Vec3f> verts_;            // list of vertices
@@ -49,6 +51,8 @@ public:
     void dwg4(TGAImage &image, const TGAColor &color, Vec3f light);
 
     void dwg5(TGAImage &image, Vec3f light);
+
+    void dwg6(TGAImage &image, Vec3f light, Vec3f camera, int depth, float *zbuffer);
 };
 
 #endif //LOWGO_MODEL_H

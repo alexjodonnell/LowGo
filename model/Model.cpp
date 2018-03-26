@@ -10,6 +10,7 @@
 #include <limits>
 #include "../tga/DWGTool.h"
 
+
 // constructor that takes in a filename
 Model::Model(const char *filename, const char *texturefile) : verts_(), faces_() {
 
@@ -237,7 +238,7 @@ void Model::dwg3(TGAImage &image, Vec3f light){
         n.normalize();
         float intensity = n * light;
 
-        // if the triangle is behing the light, don't draw it
+        // if the triangle is behind the light, don't draw it
         if (intensity > 0)
             triangle(pts, zbuffer, image, TGAColor(intensity * 255, intensity * 255, intensity * 255, 255));
     }
@@ -265,10 +266,10 @@ void Model::dwg4(TGAImage &image, const TGAColor &color, Vec3f light){
 
         for (int i = 0; i < 3; i++) pts[i] = world2screen(this->vert(face[i]), width, height);
 
-        for (int j = 0; j < 3; j++) {
-            Vec3f v = this->vert(face[j]);
-            world_coords[j] = v;
-        }
+            for (int j = 0; j < 3; j++) {
+                Vec3f v = this->vert(face[j]);
+                world_coords[j] = v;
+            }
 
         Vec3f n = (world_coords[2] - world_coords[0]) ^ (world_coords[1] - world_coords[0]);
         n.normalize();
@@ -318,11 +319,42 @@ void Model::dwg5(TGAImage &image, Vec3f light){
             for (int k=0; k<3; k++) {
                 uv[k] = this->text(i, k);
             }
-
-
-            triangle(pts, uv, zbuffer, intensity, image, *this);
+            triangle(pts, uv, zbuffer, intensity, image, this);
         }
-
     }
 }
 
+void Model::dwg6(TGAImage &image, Vec3f light, Vec3f camera, int depth, float *zbuffer){
+
+    int width = image.get_width();
+    int height = image.get_height();
+
+    Matrix Projection = Matrix::identity(4);
+    Matrix ViewPort   = viewport(width/8, height/8, width*3/4, height*3/4, depth);
+    Projection[3][2] = -1.f/camera.z;
+
+//    cout << this
+    for (int i=0; i<this->nfaces(); i++) {
+        std::vector<int> face = this->face(i);
+        Vec3i screen_coords[3];
+        Vec3f world_coords[3];
+        for (int j=0; j<3; j++) {
+            Vec3f v = this->vert(face[j]);
+            screen_coords[j] =  m2v(ViewPort*Projection*v2m(v));
+            world_coords[j]  = v;
+        }
+        Vec3f n = (world_coords[2]-world_coords[0])^(world_coords[1]-world_coords[0]);
+        n.normalize();
+        float intensity = n*light;
+        if (intensity>0) {
+            Vec2i uv[3];
+            for (int k=0; k<3; k++) {
+                uv[k] = this->text(i, k);
+            }
+            cout<<i<<endl;
+
+            triangle(screen_coords, uv, zbuffer, intensity, image, this);
+            // void triangle(Vec3f *verts, Vec2i *texts, float *zbuffer, float intensity, TGAImage &image, Model * model)
+        }
+    }
+}

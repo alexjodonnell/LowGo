@@ -7,6 +7,9 @@
 
 #include <cmath>
 #include <ostream>
+#include <vector>
+
+//----------------------------------------------------------------------------------------------------------------------
 
 // 2d vector template class
 template <class t> struct Vec2 {
@@ -46,6 +49,7 @@ template <class t> struct Vec2 {
     template <class > friend std::ostream& operator<<(std::ostream& s, Vec2<t>& v);
 };
 
+// 3d vector template class. Same as above but in 3d
 template <class t> struct Vec3 {
     t x, y, z;
 
@@ -117,6 +121,38 @@ template <class t> static void cross(Vec3<t> &u, Vec3<t> &v, Vec3<t> &r){
     r.y = ( u.z * v.x ) - ( u.x * v.z );
     r.z = ( u.x * v.y ) - ( u.y * v.x );
 }
+
+//----------------------------------------------------------------------------------------------------------------------
+
+const int DEFAULT_ALLOC=4;
+
+class Matrix {
+    std::vector< std::vector<float> > m;
+    int rows, cols;
+public:
+    Matrix(int r = DEFAULT_ALLOC, int c = DEFAULT_ALLOC);
+    inline int nrows();
+    inline int ncols();
+
+    static Matrix identity(int dimensions);
+    std::vector<float>& operator[](const int i);
+    Matrix operator*(const Matrix& a);
+    Matrix transpose();
+    Matrix inverse();
+
+    friend std::ostream& operator<<(std::ostream& s, Matrix& m);
+};
+
+
+Vec3f m2v(Matrix m);
+
+Matrix v2m(Vec3f v);
+
+Matrix viewport(int x, int y, int w, int h, int d);
+
+
+//----------------------------------------------------------------------------------------------------------------------
+
 
 // transforms a set of points from cartesian to barycentric given some point P which is the barycenter (see wikipedia or something)
 Vec3f barycentric(Vec2i *pts, Vec2i P);

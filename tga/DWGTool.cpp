@@ -99,7 +99,7 @@ void triangle(Vec2i p0, Vec2i p1, Vec2i p2, TGAImage &image, const TGAColor &col
         // beta = ratio of the completed portion to the current segment
         float beta  = (float)(i - (second_half ? p1.y - p0.y : 0)) / segment_height;
 
-        Vec2i A = p0 + (p2 - p0) * alpha; // this isn't really an error, the operation is overridden in the vector class
+        Vec2i A = p0 + (p2 - p0) * alpha;
         Vec2i B = second_half ? p1 + (p2 - p1) * beta : p0 + (p1 - p0) * beta;
 
         if (A.x > B.x) std::swap(A, B);
@@ -153,7 +153,7 @@ void triangle(Vec3f *pts, float *zbuffer, TGAImage &image, TGAColor color) {
 }
 
 // triangle that implements z buffer so that shapes that are blocked by other objects aren't drawn
-void triangle(Vec3f *verts, Vec2i *texts, float *zbuffer, float intensity, TGAImage &image, Model model) {
+void triangle(Vec3i *verts, Vec2i *texts, float *zbuffer, float intensity, TGAImage &image, Model * model) {
 
     // todo we have to pass in the model here in order to get access to the texture but I feel like there's a better way
     // really hacky bubble sort to sort the vertices in the y direction
@@ -218,7 +218,7 @@ void triangle(Vec3f *verts, Vec2i *texts, float *zbuffer, float intensity, TGAIm
             if (zbuffer[idx] < P.z) {
                 zbuffer[idx] = P.z;
 
-                TGAColor color = model.diffuse(uvP);
+                TGAColor color = model->diffuse(uvP);
 
                 image.set(j, verts[0].y + i, TGAColor(intensity * color.r, intensity * color.g, intensity * color.b, 255));
                 // attention, due to int casts verts[0].y+i != A.y
@@ -227,6 +227,79 @@ void triangle(Vec3f *verts, Vec2i *texts, float *zbuffer, float intensity, TGAIm
     }
 }
 
+// triangle that implements z buffer so that shapes that are blocked by other objects aren't drawn
+void triangle(Vec3f *verts, Vec2i *texts, float *zbuffer, float intensity, TGAImage &image, Model * model) {
 
+    // todo we have to pass in the model here in order to get access to the texture but I feel like there's a better way
+    // really hacky bubble sort to sort the vertices in the y direction
+    // (this is so that vertices can be passed in any order and it won't
+    // be black because the normal was calculated as negative)
+    if (verts[0].y>verts[1].y){
+        std::swap(verts[0], verts[1]); // swap the coords
+        std::swap(texts[0], texts[1]); // take the texture coord with it
+    }
+    if (verts[0].y>verts[2].y){
+        std::swap(verts[0], verts[2]);
+        std::swap(texts[0], texts[2]);
+
+    }
+    if (verts[1].y>verts[2].y){
+        std::swap(verts[1], verts[2]);
+        std::swap(texts[1], texts[2]);
+
+    }
+
+    // at this point, verts[2] will have the largest y component and verts[0] will have the smallest
+    // this means that the line travelling from verts[0] to verts[2] can be used as a boundary in order to horizontally
+    // sweep the triangle and fill it in.
+
+    // total height of the triangle (y span)
+    int h_total = verts[2].y - verts[0].y;
+
+    // bit messy lol. For the entire span of the triangle
+    for (int i = 0; i < h_total; i++) {
+
+        // are we in the top or bottom half of the triangle?
+        bool second_half = i > verts[1].y - verts[0].y || verts[1].y == verts[0].y;
+
+        // based on which half we are in, calculate segment height as the difference in the y direction from verts[1] to our half
+        int segment_height = second_half ? verts[2].y - verts[1].y : verts[1].y - verts[0].y;
+
+        // alpha = ratio of completed portion to the entire triangle
+        float alpha = (float)i / h_total;
+
+        // beta = ratio of the completed portion to the current segment
+        float beta  = (float)(i - (second_half ? verts[1].y - verts[0].y : 0)) / segment_height;
+
+        Vec3i A     =               verts[0] + Vec3f(verts[2] - verts[0]) * alpha;
+        Vec3i B     = second_half ? verts[1] + Vec3f(verts[2] - verts[1]) * beta : verts[0] + Vec3f(verts[1] - verts[0]) * beta;
+
+        Vec2i textA =               texts[0] + (texts[2] - texts[0])      * alpha;
+        Vec2i textB = second_half ? texts[1] + (texts[2] - texts[1])      * beta : texts[0] + (texts[1] - texts[0]) * beta;
+
+        if (A.x > B.x) {
+            swap(A, B);
+            swap(textA, textB);
+        }
+
+        for (int j = A.x; j <= B.x; j++) {
+
+            float phi = B.x == A.x ? 1. : (float)(j - A.x)/(float)(B.x - A.x);
+            Vec3i P = Vec3f(A) + Vec3f(B - A) * phi;
+            Vec2i uvP = textA + (textB - textA) * phi;
+
+            int idx = P.x + P.y * image.get_width();
+
+            if (zbuffer[idx] < P.z) {
+                zbuffer[idx] = P.z;
+
+                TGAColor color = model->diffuse(uvP);
+
+                image.set(j, verts[0].y + i, TGAColor(intensity * color.r, intensity * color.g, intensity * color.b, 255));
+                // attention, due to int casts verts[0].y+i != A.y
+            }
+        }
+    }
+}
 
 

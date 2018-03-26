@@ -8,6 +8,7 @@
 #define __IMAGE_H__
 
 #include <fstream>
+#include "../geometry/geometry.h"
 
 #pragma pack(push,1)
 
@@ -64,6 +65,15 @@ struct TGAColor {
         }
         return *this;
     }
+
+//    TGAColor & operator +(const TGAColor &c) {
+//
+//        Vec3<unsigned char> mix;
+//
+//        TGAColor mixedcolor(mix[0],mix[2],mix[3], 255);
+//
+//        return mixedcolor;
+//    }
 };
 
 
