@@ -177,6 +177,8 @@ Matrix v2m(Vec3f v) {
     return m;
 }
 
+
+// maps the cube bi unit cube [-1,1]*[-1,1]*[-1,1] to the screen cube [x,x+w]*[y,y+h]*[0,d].
 Matrix viewport(int x, int y, int w, int h, int d) {
     Matrix m = Matrix::identity(4);
     m[0][3] = x+w/2.f;
@@ -187,6 +189,29 @@ Matrix viewport(int x, int y, int w, int h, int d) {
     m[1][1] = h/2.f;
     m[2][2] = d/2.f;
     return m;
+}
+
+void lookat(Vec3f eye, Vec3f center, Vec3f up, Matrix & modelView) {
+
+    // define the new z vector as the vector travelling from our eye to the center and normalize it
+    Vec3f z = (eye - center).normalize();
+
+    // the new x is the cross product of up and z
+    Vec3f x; cross(up, z, x); x.normalize();
+
+    // the new y is the cross product of z and x
+    Vec3f y; cross( z, x, y); y.normalize();
+
+    // now we need to translate the origin to the center
+    Matrix Minv = Matrix::identity(4);
+    Matrix Tr   = Matrix::identity(4);
+    for (int i = 0; i < 3; i++) {
+        Minv[0][i] = x[i];
+        Minv[1][i] = y[i];
+        Minv[2][i] = z[i];
+        Tr[i][3] = - center[i];
+    }
+    modelView = Minv * Tr;
 }
 
 

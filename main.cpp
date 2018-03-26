@@ -24,6 +24,8 @@ Model *model = NULL;
 // scene dimensions
 const int width  = 800;
 const int height = 800;
+
+// depth is 255 so that we can dump the zbuffer to an image
 const int depth  = 255;
 
 using namespace std;
@@ -37,15 +39,15 @@ int main(int argc, char** argv) {
     if (2 == argc) {
         //model = new Model(argv[1]);
     } else {
-        //model = new Model("../resources/diablo3_pose/diablo3_pose.obj", "../resources/diablo3_pose/diablo3_pose_diffuse.tga");
-        model = new Model("../resources/models/face.obj", "../resources/textures/face_diffuse.tga");
+        model = new Model("../resources/diablo3_pose/diablo3_pose.obj", "../resources/diablo3_pose/diablo3_pose_diffuse.tga");
+//        model = new Model("../resources/models/face.obj", "../resources/textures/face_diffuse.tga");
     }
 
-    Vec3f camera( 0,  0,  3);
-    Vec3f light ( 0,  0,  -1);
+    Vec3f camera( 10,  0,  3);
+    Vec3f light ( 0,   0,  -1);
     TGAImage image(width, height, TGAImage::RGB);
 
-    model->dwg6(image, light, camera, depth, zbuffer);
+    model->dwg7(image, light, camera, depth, zbuffer);
     //dwg6(TGAImage &image, Vec3f light, Vec3f camera, int depth, float *zbuffer)
 
     { // dump z-buffer (debugging purposes only)

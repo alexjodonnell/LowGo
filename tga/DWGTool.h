@@ -14,7 +14,7 @@
 #include "../model/Model.h"
 
 
-// algorithm for drawing a line to a screen
+    // algorithm for drawing a line to a screen
     void line(int x0, int y0, int x1, int y1, TGAImage &image, const TGAColor &color);
 
     // algorithm for drawing a line to a screen

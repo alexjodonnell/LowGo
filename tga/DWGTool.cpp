@@ -152,6 +152,8 @@ void triangle(Vec3f *pts, float *zbuffer, TGAImage &image, TGAColor color) {
     }
 }
 
+// todo you have the same triangle here 2 times but for floats and ints. There should be a better way
+
 // triangle that implements z buffer so that shapes that are blocked by other objects aren't drawn
 void triangle(Vec3i *verts, Vec2i *texts, float *zbuffer, float intensity, TGAImage &image, Model * model) {
 

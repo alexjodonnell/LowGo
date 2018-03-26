@@ -12,4 +12,7 @@
 // 2d rasturize for proof of concept
 void rasterize(Vec2i p0, Vec2i p1, TGAImage &image, TGAColor color, int ybuffer[]);
 
+// Function to look at stuff
+void lookat(Vec3f eye, Vec3f center, Vec3f up);
+
 #endif //LOWGO_RENDERER_H

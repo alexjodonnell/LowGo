@@ -150,6 +150,7 @@ Matrix v2m(Vec3f v);
 
 Matrix viewport(int x, int y, int w, int h, int d);
 
+void lookat(Vec3f eye, Vec3f center, Vec3f up, Matrix& modelView);
 
 //----------------------------------------------------------------------------------------------------------------------
 

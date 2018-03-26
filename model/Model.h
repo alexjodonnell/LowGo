@@ -32,6 +32,8 @@ public:
     Vec3f vert(int i);
     std::vector<int> face(int idx);
     Vec2i text(int iface, int nvert);
+    std::vector<Vec3f> norms_;
+
 
     TGAColor diffuse(Vec2i uv);
 
@@ -50,9 +52,14 @@ public:
     // coloured, shaded mesh given a light vector with z buffer
     void dwg4(TGAImage &image, const TGAColor &color, Vec3f light);
 
+    // flat shaded mesh with a texture
     void dwg5(TGAImage &image, Vec3f light);
 
+    // mesh in perspective with a texture
     void dwg6(TGAImage &image, Vec3f light, Vec3f camera, int depth, float *zbuffer);
+
+    // draws the model in perspective with a given depth and eyeball
+    void dwg7(TGAImage &image, Vec3f light, Vec3f eye, int depth, float *zbuffer);
 };
 
 #endif //LOWGO_MODEL_H
