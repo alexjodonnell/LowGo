@@ -32,5 +32,6 @@
     // triangle pulling from diffuse texture
     void triangle(Vec3i *verts, Vec2i *texts, float *zbuffer, float intensity, TGAImage &image, Model * model);
 
+    void triangle(Vec3i *verts, Vec3f intensity, float *zbuffer, TGAImage &image);
 
 #endif //LOWGO_DWGTOOLS_H

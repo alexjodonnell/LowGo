@@ -12,7 +12,7 @@
 
 
 // constructor that takes in a filename
-Model::Model(const char *filename, const char *texturefile) : verts_(), faces_() {
+Model::Model(const char *filename, const char *texturefile, const char *normalfile) : verts_(), faces_() {
 
     // todo: this code assumes that there are texture coordinates. You should fix this so that when a face is parsed that doesn't have it, it won't break the code
     // todo: (cont) the best workaround to open a model without texture coordinates is to replace all "//" with "/1/"
@@ -80,6 +80,7 @@ Model::Model(const char *filename, const char *texturefile) : verts_(), faces_()
     std::cerr << "# v# " << verts_.size() << " vt# " << texts_.size() <<" f# "  << faces_.size() << std::endl;
     // todo add an "isTextured" field
     load_texture(texturefile, diffusemap_);
+    load_texture(normalfile, normalmap_);
 }
 
 Model::~Model() {
@@ -95,6 +96,20 @@ int Model::nfaces() {
 
 int Model::ntexts() {
     return (int)texts_.size();
+}
+
+//Vec3f Model::normal(int iface, int nthvert) {
+//    Vec2i uv(iface*normalmap_.get_width(), nthvert*normalmap_.get_height());
+//    TGAColor c = normalmap_.get(iface, nthvert);
+//    Vec3f res;
+//    for (int i=0; i<3; i++)
+//        res[2-i] = (float)c[i]/255.f*2.f - 1.f;
+//    return res;
+//}
+
+Vec3f Model::normal(int iface, int nthvert) {
+    int idx = faces_[iface][nthvert][2];
+    return norms_[idx].normalize();
 }
 
 std::vector<int> Model::face(int idx) {
@@ -393,27 +408,19 @@ void Model::dwg7(TGAImage &image, Vec3f light, Vec3f eye, int depth, float *zbuf
         std::vector<int> face = this->face(i);
         Vec3i screen_coords[3];
         Vec3f world_coords[3];
+        Vec3f intensity;
+
         for (int j = 0; j < 3; j++) {
             Vec3f v = this->vert(face[j]);
 
             // Transform the world coords into the screen coords (multiply them by the transformation matrices)
             screen_coords[j] =  m2v(ViewPort * Projection * ModelView * v2m(v));
             world_coords[j]  = v;
+            intensity[j] = this->normal(i, j) * light;
         }
 
-        Vec3f n = (world_coords[2]-world_coords[0])^(world_coords[1]-world_coords[0]);
-        n.normalize();
-        float intensity = n*light;
+            triangle(screen_coords, intensity, zbuffer, image);
+        //void triangle(Vec3f *verts, Vec3f intensity, float *zbuffer, TGAImage &image)
 
-        // if the triangle is behind the light, don't draw it
-        if (intensity>0) {
-            Vec2i uv[3];
-            for (int k=0; k<3; k++) {
-                uv[k] = this->text(i, k);
-            }
-
-            triangle(screen_coords, uv, zbuffer, intensity, image, this);
-            // void triangle(Vec3f *verts, Vec2i *texts, float *zbuffer, float intensity, TGAImage &image, Model * model)
-        }
     }
 }

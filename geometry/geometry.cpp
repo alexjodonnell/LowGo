@@ -11,7 +11,7 @@
 
 //VECTOR----------------------------------------------------------------------------------------------------------------
 
-// note tha gcc has to be used for this to work
+// note that gcc has to be used for this to work
 template <>
 template <>
 Vec3<int>::Vec3<>(const Vec3<float> &v) : x(int(v.x+.5)), y(int(v.y+.5)), z(int(v.z+.5)) {
@@ -123,8 +123,6 @@ std::ostream& operator<<(std::ostream& s, Matrix& m) {
     }
     return s;
 }
-
-
 
 //HELPER-FUNCTIONS------------------------------------------------------------------------------------------------------
 

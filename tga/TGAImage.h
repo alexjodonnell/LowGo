@@ -66,6 +66,8 @@ struct TGAColor {
         return *this;
     }
 
+    unsigned char& operator[](const int i) { return raw[i]; }
+
 //    TGAColor & operator +(const TGAColor &c) {
 //
 //        Vec3<unsigned char> mix;
@@ -111,5 +113,7 @@ public:
     unsigned char *buffer();
     void clear();
 };
+
+
 
 #endif //__IMAGE_H__

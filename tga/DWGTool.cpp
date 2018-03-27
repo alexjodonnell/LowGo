@@ -304,4 +304,77 @@ void triangle(Vec3f *verts, Vec2i *texts, float *zbuffer, float intensity, TGAIm
     }
 }
 
+// triangle that implements z buffer so that shapes that are blocked by other objects aren't drawn
+void triangle(Vec3i *verts, Vec3f intensity, float *zbuffer, TGAImage &image) {
+
+    // todo we have to pass in the model here in order to get access to the texture but I feel like there's a better way
+    // really hacky bubble sort to sort the vertices in the y direction
+    // (this is so that vertices can be passed in any order and it won't
+    // be black because the normal was calculated as negative)
+    if (verts[0].y>verts[1].y){
+        std::swap(verts[0], verts[1]); // swap the coords
+        std::swap(intensity[0], intensity[1]); // take the intensity coord with it
+    }
+    if (verts[0].y>verts[2].y){
+        std::swap(verts[0], verts[2]);
+        std::swap(intensity[0], intensity[2]);
+    }
+    if (verts[1].y>verts[2].y){
+        std::swap(verts[1], verts[2]);
+        std::swap(intensity[1], intensity[2]);
+    }
+
+    // at this point, verts[2] will have the largest y component and verts[0] will have the smallest
+    // this means that the line travelling from verts[0] to verts[2] can be used as a boundary in order to horizontally
+    // sweep the triangle and fill it in.
+
+    // total height of the triangle (y span)
+    int h_total = verts[2].y - verts[0].y;
+
+    // bit messy lol. For the entire span of the triangle
+    for (int i = 0; i < h_total; i++) {
+
+        // are we in the top or bottom half of the triangle?
+        bool second_half = i > verts[1].y - verts[0].y || verts[1].y == verts[0].y;
+
+        // based on which half we are in, calculate segment height as the difference in the y direction from verts[1] to our half
+        int segment_height = second_half ? verts[2].y - verts[1].y : verts[1].y - verts[0].y;
+
+        // alpha = ratio of completed portion to the entire triangle
+        float alpha = (float)i / h_total;
+
+        // beta = ratio of the completed portion to the current segment
+        float beta  = (float)(i - (second_half ? verts[1].y - verts[0].y : 0)) / segment_height;
+
+        Vec3i A     =               verts[0] + Vec3f(verts[2] - verts[0]) * alpha;
+        Vec3i B     = second_half ? verts[1] + Vec3f(verts[2] - verts[1]) * beta : verts[0] + Vec3f(verts[1] - verts[0]) * beta;
+
+        float intensityA =               intensity[0] + (intensity[2] - intensity[0]) * alpha;
+        float intensityB = second_half ? intensity[1] + (intensity[2] - intensity[1]) * beta : intensity[0] + (intensity[1] - intensity[0]) * beta;
+
+        if (A.x > B.x) {
+            swap(A, B);
+            swap(intensityA, intensityB);
+        }
+
+        for (int j = A.x; j <= B.x; j++) {
+
+            float phi = B.x == A.x ? 1. : (float)(j - A.x)/(float)(B.x - A.x);
+            Vec3i P = Vec3f(A) + Vec3f(B - A) * phi;
+            float intensityP = intensityA + (intensityB - intensityA) * phi;
+
+            int idx = P.x + P.y * image.get_width();
+
+            if (zbuffer[idx] < P.z) {
+                zbuffer[idx] = P.z;
+
+                image.set(j, verts[0].y + i, TGAColor(intensityP*255, intensityP*255, intensityP*255, 255));
+                // attention, due to int casts verts[0].y+i != A.y
+            }
+        }
+    }
+}
+
+
+
 

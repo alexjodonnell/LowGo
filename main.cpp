@@ -39,12 +39,13 @@ int main(int argc, char** argv) {
     if (2 == argc) {
         //model = new Model(argv[1]);
     } else {
-        model = new Model("../resources/diablo3_pose/diablo3_pose.obj", "../resources/diablo3_pose/diablo3_pose_diffuse.tga");
-//        model = new Model("../resources/models/face.obj", "../resources/textures/face_diffuse.tga");
+//        model = new Model("../resources/diablo3_pose/diablo3_pose.obj", "../resources/diablo3_pose/diablo3_pose_diffuse.tga");
+        model = new Model("../resources/models/face.obj", "../resources/textures/face_diffuse.tga", "../resources/normals/face_nm.tga");
     }
 
-    Vec3f camera( 10,  0,  3);
-    Vec3f light ( 0,   0,  -1);
+    Vec3f camera( 2, 1,  3);
+    Vec3f light ( 0, 3, -1);
+    light = light.normalize();
     TGAImage image(width, height, TGAImage::RGB);
 
     model->dwg7(image, light, camera, depth, zbuffer);

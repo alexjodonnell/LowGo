@@ -16,15 +16,17 @@ using namespace std;
 
 class Model {
 private:
-    std::vector<Vec3f> verts_;            // list of vertices
+    std::vector<Vec3f> verts_;              // list of vertices
     std::vector<std::vector<Vec3i>> faces_; // list of faces (vertex/texture/normal)
-    std::vector<Vec2f> texts_; // list of textures
+    std::vector<Vec2f> texts_;              // list of textures
+    std::vector<Vec3f> norms_;              // list of normals
 
     TGAImage diffusemap_;
+    TGAImage normalmap_;
     void load_texture(std::string filename, TGAImage &img);
 
 public:
-    Model(const char *filename, const char *texturefile);
+    Model(const char *filename, const char *texturefile, const char *normalfile);
     ~Model();
     int nverts();
     int nfaces();
@@ -32,7 +34,8 @@ public:
     Vec3f vert(int i);
     std::vector<int> face(int idx);
     Vec2i text(int iface, int nvert);
-    std::vector<Vec3f> norms_;
+    Vec3f normal(int iface, int nthvert);
+
 
 
     TGAColor diffuse(Vec2i uv);
