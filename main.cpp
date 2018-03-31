@@ -38,7 +38,7 @@ struct GouraudShader : public IShader {
     // Fragment Shader
     virtual bool fragment(Vec3f bar, TGAColor &color) {
         float intensity = varying_intensity * bar;      // interpolate intensity for the current pixel
-        color = TGAColor( 255, 255, 0) * intensity;     // apply out intensity
+        color = TGAColor( 100, 100, 100) * intensity;     // apply out intensity
         return false;                                   // no, we do not discard this pixel
     }
 };
@@ -46,7 +46,7 @@ struct GouraudShader : public IShader {
 
 int main(int argc, char** argv) {
     if (2 == argc) {
-//        model = new Model(argv[1]);
+//        model = new Model(argv[1]); broke lol
     } else {
 //        model = new Model("../resources/diablo3_pose/diablo3_pose.obj",
 //                          "../resources/diablo3_pose/diablo3_pose_diffuse.tga",
