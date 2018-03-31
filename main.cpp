@@ -3,21 +3,9 @@
 #include <vector>
 #include <cmath>
 #include <limits>
-#include "tga/TGAImage.h"
-#include "model/Model.h"
-#include "tga/DWGTool.h"
-#include "render/RenderUtils.h"
-
-const TGAColor white    = TGAColor(255, 255, 255, 255);
-const TGAColor black    = TGAColor(  0,   0,   0, 255);
-const TGAColor red      = TGAColor(255,   0,   0, 255);
-const TGAColor green    = TGAColor(  0, 255,   0, 255);
-const TGAColor blue     = TGAColor(  0,   0, 255, 255);
-const TGAColor cyan     = TGAColor(  0, 255, 255, 255);
-const TGAColor yellow   = TGAColor(255, 255,   0, 255);
-const TGAColor magenta  = TGAColor(255,   0, 255, 255);
-const TGAColor forest   = TGAColor( 34, 139,  34, 255);
-const TGAColor charcoal = TGAColor( 34,  34,  34, 255);
+#include "shared/TGAImage.h"
+#include "shared/Model.h"
+#include "GL/GL.h"
 
 Model *model = NULL;
 
@@ -25,50 +13,79 @@ Model *model = NULL;
 const int width  = 800;
 const int height = 800;
 
-// depth is 255 so that we can dump the zbuffer to an image
-const int depth  = 255;
+// scene params
+Vec3f     light( 1, -1, 1);
+Vec3f       eye(1, 1, 3);
+Vec3f    center( 0, 0, 0);
+Vec3f        up( 0, 1, 0);
 
 using namespace std;
 
+// Our Shader Programs
+struct GouraudShader : public IShader {
+
+    Vec3f varying_intensity; // written by vertex shader, read by fragment shader
+
+    // Vertex Shader
+    virtual Vec4f vertex(int iface, int nthvert) {
+
+        Vec4f gl_Vertex = embed<4>(model->vert(iface, nthvert)); // read the vertex from .obj file
+        gl_Vertex = Viewport*Projection*ModelView*gl_Vertex;     // transform it to screen coordinates
+        varying_intensity[nthvert] = std::max(0.f, model->normal(iface, nthvert)*light); // get diffuse lighting intensity
+        return gl_Vertex;
+    }
+
+    // Fragment Shader
+    virtual bool fragment(Vec3f bar, TGAColor &color) {
+        float intensity = varying_intensity * bar;      // interpolate intensity for the current pixel
+        color = TGAColor( 255, 255, 0) * intensity;     // apply out intensity
+        return false;                                   // no, we do not discard this pixel
+    }
+};
+
+
 int main(int argc, char** argv) {
-
-    // create the z buffer and encode it within one dimension
-    float *zbuffer = new float[width * height];
-    for (int i = width * height; i--; zbuffer[i] = -std::numeric_limits<float>::max());
-
     if (2 == argc) {
-        //model = new Model(argv[1]);
+//        model = new Model(argv[1]);
     } else {
-        model = new Model("../resources/diablo3_pose/diablo3_pose.obj", "../resources/diablo3_pose/diablo3_pose_diffuse.tga", "../resources/diablo3_pose/diablo3_pose_nm_tangent.tga");
-//        model = new Model("../resources/models/face.obj", "../resources/textures/face_diffuse.tga", "../resources/normals/face_nm.tga");
+//        model = new Model("../resources/diablo3_pose/diablo3_pose.obj",
+//                          "../resources/diablo3_pose/diablo3_pose_diffuse.tga",
+//                          "../resources/diablo3_pose/diablo3_pose_nm_tangent.tga",
+//                          "../resources/diablo3_pose/diablo3_pose_spec.tga");
+
+        model = new Model("../resources/models/face.obj",
+                          "../resources/textures/face_diffuse.tga",
+                          "../resources/normals/face_nm.tga",
+                          "../resources/spec/face_spec.tga");
     }
 
-    Vec3f camera( .5, .5,  3);
-    Vec3f light ( 0, -0.25, -0.5);
-    light = light.normalize();
-    TGAImage image(width, height, TGAImage::RGB);
+    // creating the image
+    TGAImage image  (width, height, TGAImage::RGB);
+    TGAImage zbuffer(width, height, TGAImage::GRAYSCALE);
 
-    model->dwg7(image, light, camera, depth, zbuffer);
-    //dwg6(TGAImage &image, Vec3f light, Vec3f camera, int depth, float *zbuffer)
+    // setting the scene
+    lookat(eye, center, up);
+    viewport(width/8, height/8, width*3/4, height*3/4);
+    projection(-1.f/(eye-center).norm());
+    light.normalize();
 
-    { // dump z-buffer (debugging purposes only)
-        TGAImage zbimage(width, height, TGAImage::GRAYSCALE);
-        for (int i=0; i<width; i++) {
-            for (int j=0; j<height; j++) {
-                zbimage.set(i, j, TGAColor(zbuffer[i+j*width], 1));
-            }
+    GouraudShader shader;
+    for (int i=0; i<model->nfaces(); i++) {
+        Vec4f screen_coords[3];
+        for (int j=0; j<3; j++) {
+            screen_coords[j] = shader.vertex(i, j);
         }
-        zbimage.flip_vertically(); // i want to have the origin at the left bottom corner of the image
-        zbimage.write_tga_file("zbuffer.tga");
+        triangle(screen_coords, shader, image, zbuffer);
     }
 
-    image.flip_vertically();
-    image.write_tga_file("output.tga");
+    // to place the origin in the bottom left corner of the image
+    image.  flip_vertically();
+    zbuffer.flip_vertically();
+    image.  write_tga_file("output.tga");
+    zbuffer.write_tga_file("zbuffer.tga");
 
     // cleanup
-    delete model;
-    delete [] zbuffer;
+    puts("Ω");
 
-    puts("Done");
     return 0;
 }
