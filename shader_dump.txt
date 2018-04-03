@@ -1,0 +1,79 @@
+THIS IS A DUMP FOR RANDOM SHADERS I WANTED TO KEEP
+
+// Gourand Shader
+struct GouraudShader : public IShader {
+
+    // written by vertex shader, read by fragment shader
+    Vec3f varying_intensity;
+
+
+    // Vertex Shader
+    virtual Vec4f vertex(int iface, int nthvert) {
+
+        // read the vertex from .obj file
+        Vec4f gl_Vertex = embed<4>(model->vert(iface, nthvert));
+
+        // transform it to screen coordinates
+        gl_Vertex = Viewport*Projection*ModelView*gl_Vertex;
+
+        // get diffuse lighting intensity
+        varying_intensity[nthvert] = std::max(0.f, model->normal(iface, nthvert)*light);
+
+        return gl_Vertex;
+    }
+
+    // Fragment Shader
+    virtual bool fragment(Vec3f bar, TGAColor &color) {
+
+        // interpolate intensity for the current pixel (dot product of intensity and barycentric coord)
+        float intensity = varying_intensity * bar;
+
+        // apply out intensity
+        color = forest * (intensity);
+
+        // no, we do not discard this pixel
+        return false;
+    }
+};
+
+// Diffuse texture shader
+struct Shader : public IShader {
+
+    // written by vertex shader, read by fragment shader
+    Vec3f varying_intensity;
+
+    // diffuse texture coordinates (2 per vertex, 3 vertices)
+    mat<2, 3, float> varying_uv;
+
+    // Vertex Shader
+    virtual Vec4f vertex(int iface, int nthvert) {
+
+        // read the vertex from .obj file
+        Vec4f gl_Vertex = embed<4>(model->vert(iface, nthvert));
+
+        // read the uv from the .obj file and populate the matrix
+        varying_uv.set_col(nthvert, model->uv(iface, nthvert));
+
+        // get diffuse lighting intensity
+        varying_intensity[nthvert] = std::max(0.f, model->normal(iface, nthvert)*light);
+
+        // transform it to screen coordinates
+        return Viewport*Projection*ModelView*gl_Vertex;
+    }
+
+    // Fragment Shader
+    virtual bool fragment(Vec3f bar, TGAColor &color) {
+
+        // interpolate intensity for the current pixel (dot product of intensity and barycentric coord)
+        float intensity = varying_intensity * bar;
+
+        // interpolate uv to retrieve the texture from this pixel
+        Vec2f uv = varying_uv*bar;
+
+        // apply our intensity to the color read from the diffuse texture
+        color = model->diffuse(uv) * (intensity);
+
+        // no, we do not discard this pixel
+        return false;
+    }
+};

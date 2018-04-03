@@ -41,7 +41,7 @@ void lookat(Vec3f eye, Vec3f center, Vec3f up) {
     // Initialize the model view
     ModelView = Matrix::identity();
 
-    // now we need to translate the origin to the center
+    // now we need to translate the origin to the new center
     for (int i = 0; i < 3; i++) {
         ModelView[0][i] = x[i];
         ModelView[1][i] = y[i];
@@ -88,17 +88,17 @@ void triangle(Vec4f *pts, IShader &shader, TGAImage &image, TGAImage &zbuffer) {
         for (P.y = bboxmin.y; P.y <= bboxmax.y; P.y++) {
 
             // compute the barycenter of the triangle
-            Vec3f c = barycentric(proj<2>(pts[0]/pts[0][3]), proj<2>(pts[1]/pts[1][3]), proj<2>(pts[2]/pts[2][3]), proj<2>(P));
+            Vec3f bar = barycentric(proj<2>(pts[0]/pts[0][3]), proj<2>(pts[1]/pts[1][3]), proj<2>(pts[2]/pts[2][3]), proj<2>(P));
 
-            float z = pts[0][2]*c.x + pts[1][2]*c.y + pts[2][2]*c.z;
-            float w = pts[0][3]*c.x + pts[1][3]*c.y + pts[2][3]*c.z;
+            float z = pts[0][2]*bar.x + pts[1][2]*bar.y + pts[2][2]*bar.z;
+            float w = pts[0][3]*bar.x + pts[1][3]*bar.y + pts[2][3]*bar.z;
             int frag_depth = std::max(0, std::min(255, int(z/w + .5)));
 
             // if we're still in bounds, keep going
-            if (c.x<0 || c.y<0 || c.z<0 || zbuffer.get(P.x, P.y)[0] > frag_depth) continue;
+            if (bar.x<0 || bar.y<0 || bar.z<0 || zbuffer.get(P.x, P.y)[0] > frag_depth) continue;
 
             // run our shader program to get the color
-            bool discard = shader.fragment(c, color);
+            bool discard = shader.fragment(bar, color);
             if (!discard) {
                 zbuffer.set(P.x, P.y, TGAColor(frag_depth));
                 image.set(P.x, P.y, color);
