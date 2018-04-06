@@ -72,7 +72,7 @@ Model::Model(const char *filename, const char *texturefile, const char *normalfi
         }
     }
     // log the amount of vertices and faces todo remove me if I become annoying
-    std::cerr << "# v# " << verts_.size() << " vt# " << uv_.size() <<" f# "  << faces_.size() << std::endl;
+    std::cerr << "# v# " << verts_.size() << " vt# " << uv_.size() <<" f# "  << faces_.size() << " vn# " << norms_.size() << std::endl;
     // todo add an "isTextured" field
     load_texture(texturefile, diffusemap_);
     load_texture(normalfile, normalmap_);

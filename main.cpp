@@ -15,21 +15,32 @@ const int width  = 800;
 const int height = 800;
 
 // scene params
-Vec3f     light( 1, 1, 1);
-Vec3f       eye(1, 1, 3);
+Vec3f     light( 1, 1, 0);
+Vec3f       eye( 1, 1, 4);
 Vec3f    center( 0, 0, 0);
 Vec3f        up( 0, 1, 0);
 
 using namespace std;
 
 // Our Shader Programs
+// Diffuse texture shader with diffused and specular lighting
 struct Shader : public IShader {
 
-    // written by vertex shader, read by fragment shader
-    Vec3f varying_intensity;
+    // varying is a reserved keyword in GLSL language.
+    // in varying variables we store data to be interpolated inside the triangle,
+    // and the fragment shaders get the interpolated value (for the current pixel).
 
     // diffuse texture coordinates (2 per vertex, 3 vertices)
     mat<2, 3, float> varying_uv;
+
+    // Uniform is a reserved keyword in GLSL, it allows to pass constants to the shaders
+
+    // It's faster to combine all these matrices
+    //  Projection*ModelView
+    mat<4,4,float> uniform_M;
+
+    // (Projection*ModelView).invert_transpose()
+    mat<4,4,float> uniform_MIT;
 
     // Vertex Shader
     virtual Vec4f vertex(int iface, int nthvert) {
@@ -40,9 +51,6 @@ struct Shader : public IShader {
         // read the uv from the .obj file and populate the matrix
         varying_uv.set_col(nthvert, model->uv(iface, nthvert));
 
-        // get diffuse lighting intensity
-        varying_intensity[nthvert] = std::max(0.f, model->normal(iface, nthvert)*light);
-
         // transform it to screen coordinates
         return Viewport*Projection*ModelView*gl_Vertex;
     }
@@ -50,19 +58,34 @@ struct Shader : public IShader {
     // Fragment Shader
     virtual bool fragment(Vec3f bar, TGAColor &color) {
 
-        // interpolate intensity for the current pixel (dot product of intensity and barycentric coord)
-        float intensity = varying_intensity * bar;
-
         // interpolate uv to retrieve the texture from this pixel
         Vec2f uv = varying_uv*bar;
 
+        // for diffuse lighting we comput the (cosine of) angle between vectors n and l
+        Vec3f n = proj<3>(uniform_MIT*embed<4>(model->normal(uv))).normalize();
+        Vec3f l = proj<3>(uniform_M  *embed<4>(light        )).normalize();
+        float diff = std::max(0.f, n*l);
+
+        // now we are interested in the (cosine of) angle between vectors r (reflected light direction) and v (view direction).
+        // find r, our reflected light vector
+        Vec3f r = (n*(n*l*2.f) - l).normalize();
+        float spec = pow(std::max(r.z, 0.0f), model->specular(uv));
+
         // apply our intensity to the color read from the diffuse texture
-        color = model->diffuse(uv) * (intensity);
+        TGAColor c = model->diffuse(uv);
+        color = c;
+
+        // compute our lighting as a weighted sum of ambient, diffuse and specular lighting
+        // (here our coefficients are 5, 1 and .6)
+        for (int i=0; i<3; i++){
+            color[i] = std::min<float>(5 + c[i]*(diff + .6*spec), 255);
+        }
 
         // no, we do not discard this pixel
         return false;
     }
 };
+
 
 
 int main(int argc, char** argv) {
@@ -76,7 +99,7 @@ int main(int argc, char** argv) {
 
         model = new Model("../resources/models/face.obj",
                           "../resources/textures/face_diffuse.tga",
-                          "../resources/normals/face_nm.tga",
+                          "../resources/normals/face_nm2.tga",
                           "../resources/spec/face_spec.tga");
     }
 
@@ -91,6 +114,9 @@ int main(int argc, char** argv) {
     light.normalize();
 
     Shader shader;
+    shader.uniform_M   =  Projection*ModelView;
+    shader.uniform_MIT = (Projection*ModelView).invert_transpose();
+
     for (int i=0; i<model->nfaces(); i++) {
         Vec4f screen_coords[3];
         for (int j=0; j<3; j++) {
