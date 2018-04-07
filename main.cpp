@@ -15,15 +15,14 @@ const int width  = 800;
 const int height = 800;
 
 // scene params
-Vec3f     light( 1, 1, 0);
+Vec3f     light( 1, 1, 1);
 Vec3f       eye( 1, 1, 4);
 Vec3f    center( 0, 0, 0);
 Vec3f        up( 0, 1, 0);
 
 using namespace std;
 
-// Our Shader Programs
-// Diffuse texture shader with diffused and specular lighting
+// Diffuse texture shader with diffused, ambient and specular lighting
 struct Shader : public IShader {
 
     // varying is a reserved keyword in GLSL language.
@@ -68,7 +67,7 @@ struct Shader : public IShader {
 
         // now we are interested in the (cosine of) angle between vectors r (reflected light direction) and v (view direction).
         // find r, our reflected light vector
-        Vec3f r = (n*(n*l*2.f) - l).normalize();
+        Vec3f r = (n * (n * l*2.f) - l).normalize();
         float spec = pow(std::max(r.z, 0.0f), model->specular(uv));
 
         // apply our intensity to the color read from the diffuse texture
@@ -78,7 +77,7 @@ struct Shader : public IShader {
         // compute our lighting as a weighted sum of ambient, diffuse and specular lighting
         // (here our coefficients are 5, 1 and .6)
         for (int i=0; i<3; i++){
-            color[i] = std::min<float>(5 + c[i]*(diff + .6*spec), 255);
+            color[i] = std::min<float>(.5 + c[i]*(diff + .6*spec), 255);
         }
 
         // no, we do not discard this pixel
@@ -86,15 +85,14 @@ struct Shader : public IShader {
     }
 };
 
-
-
 int main(int argc, char** argv) {
     if (2 == argc) {
 //        model = new Model(argv[1]); broke lol
     } else {
 //        model = new Model("../resources/diablo3_pose/diablo3_pose.obj",
-//                          "../resources/diablo3_pose/diablo3_pose_diffuse.tga",
-//                          "../resources/diablo3_pose/diablo3_pose_nm_tangent.tga",
+////                          "../resources/diablo3_pose/diablo3_pose_diffuse.tga",
+//                          "../resources/textures/grid.tga",
+//                          "../resources/diablo3_pose/diablo3_pose_nm.tga",
 //                          "../resources/diablo3_pose/diablo3_pose_spec.tga");
 
         model = new Model("../resources/models/face.obj",
@@ -132,7 +130,7 @@ int main(int argc, char** argv) {
     zbuffer.write_tga_file("zbuffer.tga");
 
     // cleanup
-    puts("Ω");
+    puts("∆");
 
     return 0;
 }

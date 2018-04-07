@@ -141,7 +141,7 @@ struct Shader : public IShader {
 
 ========================================================================================================================
 
-// Diffuse texture shader with diffused and specular lighting
+// Diffuse texture shader with diffused, ambient and specular lighting
 struct Shader : public IShader {
 
     // varying is a reserved keyword in GLSL language.
@@ -186,7 +186,7 @@ struct Shader : public IShader {
 
         // now we are interested in the (cosine of) angle between vectors r (reflected light direction) and v (view direction).
         // find r, our reflected light vector
-        Vec3f r = (n*(n*l*2.f) - l).normalize();
+        Vec3f r = (n * (n * l*2.f) - l).normalize();
         float spec = pow(std::max(r.z, 0.0f), model->specular(uv));
 
         // apply our intensity to the color read from the diffuse texture
@@ -196,7 +196,7 @@ struct Shader : public IShader {
         // compute our lighting as a weighted sum of ambient, diffuse and specular lighting
         // (here our coefficients are 5, 1 and .6)
         for (int i=0; i<3; i++){
-            color[i] = std::min<float>(5 + c[i]*(diff + .6*spec), 255);
+            color[i] = std::min<float>(.5 + c[i]*(diff + .6*spec), 255);
         }
 
         // no, we do not discard this pixel
@@ -204,3 +204,52 @@ struct Shader : public IShader {
     }
 };
 
+========================================================================================================================
+
+// Phong shading (kinda broke)
+struct Shader : public IShader {
+
+    // varying is a reserved keyword in GLSL language.
+    // in varying variables we store data to be interpolated inside the triangle,
+    // and the fragment shaders get the interpolated value (for the current pixel).
+
+    // diffuse texture coordinates (2 per vertex, 3 vertices)
+    mat<2, 3, float> varying_uv;
+
+    // normal per vertex to be interpolated by FS
+    mat<3,3,float> varying_nrm;
+
+    // Vertex Shader
+    virtual Vec4f vertex(int iface, int nthvert) {
+
+        // read the vertex from .obj file
+        Vec4f gl_Vertex = embed<4>(model->vert(iface, nthvert));
+
+        // read the uv from the .obj file and populate the matrix
+        varying_uv.set_col(nthvert, model->uv(iface, nthvert));
+
+        // read the normal and transform it to our frame
+        varying_nrm.set_col(nthvert, proj<3>((Projection*ModelView).invert_transpose()*embed<4>(model->normal(iface, nthvert), 0.f)));
+
+        // transform it to screen coordinates
+        return Viewport*Projection*ModelView*gl_Vertex;
+    }
+
+    // Fragment Shader
+    virtual bool fragment(Vec3f bar, TGAColor &color) {
+
+        // interpolate uv to retrieve the texture from this pixel
+        Vec2f uv = varying_uv*bar;
+
+        // interpolate the normal
+        Vec3f bn = (varying_nrm*bar).normalize();
+
+        // compute the diffuse lighting
+        float diff = std::max(0.f, bn*light);
+
+        // apply our intensity to the color read from the diffuse texture
+        color = model->diffuse(uv) * diff;
+
+        return false;
+    }
+};
