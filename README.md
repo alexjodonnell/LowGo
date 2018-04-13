@@ -1,7 +1,7 @@
 # LowGo
 Working on a renderer in c++ that uses no external libraries. The goal is to see how low I can go.
 The real purpose for a project like this is to get an intuition for how graphics libraries like OpenGL
-work under the cover. 
+work under the cover. It's also a good excersise in vector mathematics.
 
 # Shader Programs
 The first release was designed to demonstrate some interesting algorithms that draw to shapes to the screen.
